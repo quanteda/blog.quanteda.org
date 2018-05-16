@@ -1,4 +1,4 @@
-baseurl = ""
+baseurl = "https://vigilant-hermann-1b69b8.netlify.com"
 languageCode = "en-gb"
 title = "Quanteda Initiative"
 theme = "hugo-type-theme"
