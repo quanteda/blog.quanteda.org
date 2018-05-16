@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1526460826664.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "DD9EE6C4",
+    "lastKnownWriteTime" : 1526464298,
+    "last_content_update" : 1526464298043,
+    "path" : "~/packages/website-organisation-type/layouts/partials/post-list.html",
+    "project_path" : "layouts/partials/post-list.html",
+    "properties" : {
+        "cursorPosition" : "1,9",
+        "scrollLine" : "0"
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "html"
+}

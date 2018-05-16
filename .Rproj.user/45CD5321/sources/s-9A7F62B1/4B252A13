@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1526461026266.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "4B252A13",
+    "lastKnownWriteTime" : 1526464185,
+    "last_content_update" : 1526464185320,
+    "path" : "~/packages/website-organisation-type/static/css/main.css",
+    "project_path" : "static/css/main.css",
+    "properties" : {
+        "cursorPosition" : "23,30",
+        "scrollLine" : "12"
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "css"
+}
