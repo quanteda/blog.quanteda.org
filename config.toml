@@ -1,4 +1,4 @@
-baseurl = "https://blog.quantea.org/"
+baseurl = "https://blog.quanteda.org/"
 languageCode = "en-gb"
 title = "Quanteda Initiative"
 theme = "hugo-type-theme"
