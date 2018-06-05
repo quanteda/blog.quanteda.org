@@ -1,4 +1,4 @@
-baseurl = "https://vigilant-hermann-1b69b8.netlify.com/"
+baseurl = "https://blog.quantea.org/"
 languageCode = "en-gb"
 title = "Quanteda Initiative"
 theme = "hugo-type-theme"
@@ -22,7 +22,7 @@ paginate = 10
 	# or use Gravatar by adding your email address to generate a unique avatar
 	#gravatar = "your@email.com"
 
-	headerText = "<h1>For all the text analysts</h1> Quanteda Initiative is a non-profit organization to achieve <a href='/about'>our missions</a>"
+	# headerText = "<h1>For all the text analysts</h1> Quanteda Initiative is a non-profit organization to achieve <a href='/about'>our missions</a>"
 	# To add a header background to the main site, save your image under static/img/.
 	# If now image path is provided, a orange background will be shown instead.
 	headerImage = ""
