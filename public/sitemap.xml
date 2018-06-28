@@ -3,92 +3,103 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://blog.quanteda.org/2015/10/10/migrate-from-jekyll/</loc>
+    <loc>/2018/07/10/announcing-the-quonteda-blog/</loc>
+    <lastmod>2018-07-10T00:00:00+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/2015/10/10/migrate-from-jekyll/</loc>
     <lastmod>2015-10-10T13:07:31+02:00</lastmod>
   </url>
   
   <url>
-    <loc>https://blog.quanteda.org/2015/09/17/go-is-for-lovers/</loc>
+    <loc>/2015/09/17/go-is-for-lovers/</loc>
     <lastmod>2015-09-17T13:47:08+02:00</lastmod>
   </url>
   
   <url>
-    <loc>https://blog.quanteda.org/2015/08/03/hugo-is-for-lovers/</loc>
+    <loc>/2015/08/03/hugo-is-for-lovers/</loc>
     <lastmod>2015-08-03T13:39:46+02:00</lastmod>
   </url>
   
   <url>
-    <loc>https://blog.quanteda.org/2015/07/23/hello-r-markdown/</loc>
+    <loc>/2015/07/23/hello-r-markdown/</loc>
     <lastmod>2015-07-23T21:13:14-05:00</lastmod>
   </url>
   
   <url>
-    <loc>https://blog.quanteda.org/2015/06/24/creating-a-new-theme/</loc>
+    <loc>/2015/06/24/creating-a-new-theme/</loc>
     <lastmod>2015-06-24T13:50:46+02:00</lastmod>
   </url>
   
   <url>
-    <loc>https://blog.quanteda.org/categories/</loc>
+    <loc>/tags/blog/</loc>
+    <lastmod>2018-07-10T00:00:00+02:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://blog.quanteda.org/tags/hugo/</loc>
+    <loc>/categories/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/tags/hugo/</loc>
     <lastmod>2015-10-10T13:07:31+02:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://blog.quanteda.org/tags/jekyll/</loc>
+    <loc>/tags/jekyll/</loc>
     <lastmod>2015-10-10T13:07:31+02:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://blog.quanteda.org/tags/migration/</loc>
+    <loc>/tags/migration/</loc>
     <lastmod>2015-10-10T13:07:31+02:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://blog.quanteda.org/tags/plot/</loc>
+    <loc>/tags/plot/</loc>
     <lastmod>2015-07-23T21:13:14-05:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://blog.quanteda.org/post/</loc>
-    <lastmod>2015-10-10T13:07:31+02:00</lastmod>
+    <loc>/post/</loc>
+    <lastmod>2018-07-10T00:00:00+02:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://blog.quanteda.org/</loc>
-    <lastmod>2015-10-10T13:07:31+02:00</lastmod>
+    <loc>/</loc>
+    <lastmod>2018-07-10T00:00:00+02:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://blog.quanteda.org/categories/r/</loc>
+    <loc>/categories/r/</loc>
     <lastmod>2015-07-23T21:13:14-05:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://blog.quanteda.org/tags/r-markdown/</loc>
+    <loc>/tags/r-markdown/</loc>
     <lastmod>2015-07-23T21:13:14-05:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://blog.quanteda.org/tags/regression/</loc>
+    <loc>/tags/regression/</loc>
     <lastmod>2015-07-23T21:13:14-05:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://blog.quanteda.org/tags/</loc>
-    <lastmod>2015-10-10T13:07:31+02:00</lastmod>
+    <loc>/tags/</loc>
+    <lastmod>2018-07-10T00:00:00+02:00</lastmod>
     <priority>0</priority>
   </url>
   
