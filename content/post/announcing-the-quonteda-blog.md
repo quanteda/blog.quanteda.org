@@ -1,6 +1,6 @@
 +++
 title = "Announcing the Quonteda Blog"
-date = "2018-07-10T00:00:00+02:00"
+date = "2018-06-15T00:00:00+02:00"
 tags = ["blog"]
 +++
 
