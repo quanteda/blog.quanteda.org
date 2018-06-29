@@ -1,10 +1,17 @@
 +++
 title = "Announcing the Quonteda Blog"
-date = "2018-06-15T00:00:00+02:00"
+date = "2015-06-24T13:50:46+02:00"
 tags = ["blog"]
 +++
 
-## Quanteda Blog
-### Exciting!
 
-This is a place holder for a brand-new quanteda blog.
+
+## Quanteda Blog
+
+*This is a placeholder for a brandnew quanteda blog.*
+
+We are so delighted to announce our new blog. 
+
+### What is this for
+
+This blog serves for several purposes:
