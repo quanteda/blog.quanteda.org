@@ -10,7 +10,7 @@ tags = ["blog"]
 
 **This is a placeholder for a brandnew quanteda blog.**
 
-We are so delighted to announce our new blog. 
+We are so delighted to announce our new blog.
 
 ### What is this blog for?
 
@@ -22,4 +22,3 @@ This blog serves for several purposes:
 ### We need contributors
 
 [Here](**) is a guideline for contributors.
-
