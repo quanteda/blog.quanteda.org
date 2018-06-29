@@ -1,6 +1,6 @@
 +++
 title = "Announcing the Quonteda Blog"
-date = "2018-06-24T13:50:46+02:00"
+date = "2018-06-24T02:00:00+02:00"
 tags = ["blog"]
 +++
 
@@ -19,5 +19,7 @@ This blog serves for several purposes:
 1. Announcing new update on our quanteda-verse packages and services
 2. Sharing the information and tips on natural language processing especially in `R`
 
+### We need contributors
 
+[Here](**) is a guideline for contributors.
 
