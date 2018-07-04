@@ -77,6 +77,6 @@ We accept the post in the normal markdown format (not r-markdown), which means t
 
 #### Additional tips
 
-1. Please make your post accessible to NLP beginners (esp. if your post is a tutorial)
-1. Be nice to other software developers or users of other softwares you are not fond of
+1. Make your post accessible to NLP beginners (esp. if your post is a tutorial).
+1. Be nice to other software developers or users of other softwares you are not particularly fond of.
 
