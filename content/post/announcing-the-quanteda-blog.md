@@ -1,5 +1,5 @@
 +++
-title = "Announcing the Quonteda Blog"
+title = "Announcing the Quanteda Blog"
 date = "2018-06-24T02:00:00+02:00"
 tags = ["blog"]
 +++
