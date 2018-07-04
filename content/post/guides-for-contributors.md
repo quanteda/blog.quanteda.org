@@ -44,7 +44,8 @@ The followings are the steps:
 
 1. Create a local copy of the repository
 1. Create your own branch
-1. Write your own post as a markdown file and save it under `contents/posts`. The template file is found [here](#)
+1. Write your own post as a markdown file using the template (found in `templates` folder.)
+1. Save the file under `contents/posts`.
 1. Make a commit to your branch with your markdown file
 1. Push your commit
 1. Create a pull request [here](https://github.com/quanteda/blog.quanteda.org/pulls)
@@ -55,7 +56,7 @@ Once you create a pull request, the editorial process will be openly conducted w
 
 You can contribute to our blog with this way.
 
-1. Download the template file [here](#)
+1. Download the template file [here](https://github.com/quanteda/blog.quanteda.org/tree/master/templates/blogpost_template.md)
 1. Write your own post using the template
 1. Send the file to [us](mailto:***@quanteda.org)
 
@@ -74,6 +75,10 @@ You, of course, include the code in your post. The syntax is something like:
 ````
 
 We accept the post in the normal markdown format (not r-markdown), which means that if you want to include the output from your code, you need to put them in the markdown file. If the code is written in R, probably the easiest way is to `knit` the file (c.f. https://stackoverflow.com/questions/31914161/how-to-convert-rmd-into-md-in-r-studio).
+
+#### Inclusion of images
+
+You can show images saved in the `static/img` folder. The syntax to include image is found in the blog-post template.
 
 #### Additional tips
 
