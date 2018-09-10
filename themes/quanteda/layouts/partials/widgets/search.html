@@ -1,0 +1,8 @@
+<div class="widget">
+  <h4>Search</h4>
+  <form action="//google.com/search" method="get" accept-charset="UTF-8" role="search" class="form-search">
+    <input name="q" results="0" placeholder="Type something" type="text" class="input-medium search-query">
+    <input type="hidden" name="q" value="site:{{ .Site.BaseURL }}">
+    <button type="submit" class="btn btn-flat btn-color">Search</button>
+  </form>
+</div>

@@ -1,0 +1,12 @@
+<div class="widget">
+  <h4>Categories</h4>
+  <ul class="cat">
+    {{ range $name, $items := .Site.Taxonomies.categories }}
+    <li>
+        <a href="/categories/{{ $name | urlize | lower }}">
+            {{ $name | title }} ({{ len $items }})
+        </a>
+    </li>
+    {{ end }}
+  </ul>
+</div>

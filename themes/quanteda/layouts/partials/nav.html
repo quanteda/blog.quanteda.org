@@ -1,0 +1,48 @@
+<div class="cbp-af-header">
+  <div class=" cbp-af-inner">
+    <div class="container">
+      <div class="row">
+
+        <div class="span4">
+          <!-- logo -->
+          <div class="logo">
+          {{ if eq .URL "/" }}
+            <img src="{{ "img/logo-white.svg" | relURL }}" alt="Quanteda Initiative" />
+          {{ else }}
+            <a href="/">
+                <img src="{{ "img/logo-white.svg" | relURL }}" alt="Quanteda Initiative" />
+            </a>
+          {{ end }}
+          </div>
+          <!-- end logo -->
+        </div>
+        <div class="span8">
+          <!-- top menu -->
+          <div class="navbar">
+            <div class="navbar-inner">
+              <nav>
+                <ul class="nav topnav">
+                  {{ range .Site.Menus.main }}
+                  <li class="dropdown">
+                    <a href="{{ .URL }}">{{ .Name }}</a>
+                      {{ if .HasChildren }}
+                        <ul class="dropdown-menu">
+                        {{ range .Children }}
+                           <li><a href="{{ .URL }}">{{ .Name }}</a></li>
+                        {{ end }}
+                        </ul>
+                      {{ end }}
+                  </li>
+                  {{ end }}
+                </ul>
+              </nav>
+            </div>
+          </div>
+          <!-- end menu -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+

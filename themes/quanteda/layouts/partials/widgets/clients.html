@@ -1,0 +1,16 @@
+{{ if gt (len .Site.Data.clients) 0 }}
+<h4>Our users</h4>
+<ul class="clients">
+    {{ range .Site.Data.clients }}
+    <li title="{{ .name }}">
+        {{ if .url }}
+          <a href="{{ .url }}" target="_blank">
+            <img src="{{ .image }}" class="client-logo" alt="{{ .name }}" />
+          </a>
+        {{ else }}
+          <img src="{{ .image }}" class="client-logo" alt="{{ .name }}" />
+        {{ end }}
+    </li>
+    {{ end }}
+</ul>
+{{ end }}
