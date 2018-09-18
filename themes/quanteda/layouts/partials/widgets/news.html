@@ -1,0 +1,6 @@
+<h5>Latest news</h5>
+<ul class="list list-angle-right">
+  {{ range first 4 (where .Site.Pages "Section" "news") }}
+  <li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+  {{ end }}
+</ul>

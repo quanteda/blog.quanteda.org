@@ -1,0 +1,17 @@
+{{ if gt (len .Site.Data.testimonials) 0 }}
+<h4>Testimonials</h4>
+<div class="testmonial_slider">
+  <ul class="slides">
+    {{ range .Site.Data.testimonials }}
+      <li>
+    	<div class="testimonial_item">
+    	  <p>{{ .text | markdownify }}</p>
+    	  <span class="author">{{ .name }}</span>
+    	  <span class="occupation">{{ .position }}</span>
+    	  <!-- end testmonial -->
+    	</div>
+      </li>
+      {{ end }}
+  </ul>
+</div>
+{{ end }}
