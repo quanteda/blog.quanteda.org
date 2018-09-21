@@ -19,12 +19,12 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
 
 [[menu.main]]
     name = "Home"
-    url  = "https://quanteda-org.netlify.com/"
+    url  = "https://quanteda.org/"
     weight = 1
 
 [[menu.main]]
     name = "About"
-    url  = "https://quanteda-org.netlify.com/about/"
+    url  = "https://quanteda.org/about/"
     weight = 2
 
 [[menu.main]]
@@ -35,7 +35,7 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
     
 [[menu.main]]
     name = "quanteda"
-    url  = "https://quanteda-org.netlify.com/quanteda/"
+    url  = "https://docs.quanteda.io"
     parent = "projects"
     weight = 1
     
@@ -59,12 +59,12 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
 
 [[menu.main]]
     name = "Services"
-    url  = "https://quanteda-org.netlify.com/services/"
+    url  = "https://quanteda.org/services/"
     weight = 4
     
 [[menu.main]]
     name = "News"
-    url  = "https://quanteda-org.netlify.com/news/"
+    url  = "https://quanteda.org/news/"
     weight = 5
     
 [[menu.main]]
