@@ -1,0 +1,212 @@
+---
+title: "Text analysis of the 10th Republican Presidential candidate debate using R and the quanteda package"
+author: "Kenneth Benoit"
+date: "2016-02-26T02:00:00+02:00"
+tags: ["blog"]
+output: html_document
+---
+
+
+
+<p>On 25 February 2016, the tenth debate among the Republican candidates for the 2016 Presidential election took place in Houston, Texas, moderated by CNN. In this demonstration of the <a href="https://github.com/kbenoit/quanteda">quanteda</a> package, I will show how to download, import, clean, parse by speaker, and analyze the debate by speaker.</p>
+<p>The first step involves loading the debate into R. I got the debate from the <a href="http://www.nytimes.com/2016/02/26/us/politics/transcript-of-the-republican-presidential-debate-in-houston.html?action=click&amp;contentCollection=Politics&amp;module=RelatedCoverage&amp;region=Marginalia&amp;pgtype=article">New York Times publication of the transcript</a>. It’s possible to copy and paste the text into a text editor, but because of headers, sidebar ads, and image captions, this necessitates a lot of cleaning afteward. To get around this, I printed the article to a pdf file, saved as <code>republican_debate_2016-02-25.pdf</code>.</p>
+<p>To read this text, I then called the utility <code>pdftotext</code>, described in this <a href="http://www.kenbenoit.net/how-to-batch-convert-pdf-files-to-text/">post</a>.</p>
+<pre class="r"><code>transcriptText &lt;- system2(&quot;pdftotext&quot;, args = &quot;-layout files/republican_debate_2016-02-25.pdf -&quot;, stdout = TRUE)</code></pre>
+<pre class="r"><code>Encoding(transcriptText) &lt;- &quot;UTF-8&quot;</code></pre>
+<p>The first command performs the conversion using the <code>system2()</code> call, sends this to “stdout”, which is assigned in R to <code>transcriptText</code>, a character vector consisting of one element per line of the text. The <code>-layout</code> argument to <code>pdftotext</code> preserves the formatting as printed in the original text. If we inspect the first 17 lines, we see the text, which includes tags for each speaker’s name in capitals, and parenthetical remarks such as “(APPLAUSE)” denoting non-text events.</p>
+<pre class="r"><code>cat(paste(transcriptText[6:22], collapse = &quot;\n&quot;))</code></pre>
+<pre><code>## 
+##        Advertising helps fund Times journalism.
+## 
+## Transcript of the Republican
+## Presidential Debate in Houston
+## 
+## Feb. 25, 2016
+## 
+## Following is a transcript of the Republican debate, as transcribed by the Federal News
+## Service.
+## 
+## BLITZER: We&#39;re live here at the University of Houston for the 10th Republican
+## presidential debate. (APPLAUSE)
+## 
+## BLITZER: An enthusiastic crowd is on hand here in the beautiful opera house at the
+## Moore School of Music. Texas is the biggest prize next Tuesday, Super Tuesday, when
+## 11 states vote, a day that will go a long way towards deciding who wins the Republican</code></pre>
+<p>To make this a single text object, we will paste the lines together, joining them with the characters that separated them originally.</p>
+<pre class="r"><code>transcriptText &lt;- paste(transcriptText, collapse = &quot;\n&quot;)</code></pre>
+<p>To get only the text spoken by each candidate, we still need to remove some of the extra text at the beginning and the end of the article, and we need to remove the non-text markers for events such as applause. We can do this using a substitution of the text we wish to remove for the null string “”, using <code>gsub()</code>.</p>
+<pre class="r"><code>transcriptText &lt;- gsub(&quot;\\fTranscript of the Republican(.*?)08\\)18&quot;, &quot;&quot;, transcriptText)
+transcriptText &lt;- gsub(&quot;\\s*\\((APPLAUSE|BELL RINGS|BELL RINGING|THE STAR-SPANGLED BANNER|COMMERCIAL BREAK|CROSSTALK|inaudible|LAUGHTER|CHEERING)\\)\\s*&quot;, &quot;&quot;, transcriptText)
+transcriptText &lt;- gsub(&quot;https:(.*?)\\d\\sof\\s90&quot;, &quot;&quot;, transcriptText)</code></pre>
+<pre class="r"><code>cat(paste(substring(transcriptText, 1, 1000), substring(transcriptText, 5000, 5655), collapse = &quot;\n&quot;))</code></pre>
+<pre><code>## Transcript of the Republican Presidential Debate in Houston - The New York Times                                                 20/09/2018, 11)09
+## 
+##                       POLITICS                                                                                   Unblock ads
+## 
+##    Please disable your ad blocker.
+## 
+##        Advertising helps fund Times journalism.
+## 
+## Transcript of the Republican
+## Presidential Debate in Houston
+## 
+## Feb. 25, 2016
+## 
+## Following is a transcript of the Republican debate, as transcribed by the Federal News
+## Service.
+## 
+## BLITZER: We&#39;re live here at the University of Houston for the 10th Republican
+## presidential debate.BLITZER: An enthusiastic crowd is on hand here in the beautiful opera house at the
+## Moore School of Music. Texas is the biggest prize next Tuesday, Super Tuesday, when
+## 11 states vote, a day that will go a long way towards deciding who wins the Republican
+## nomination.
+## 
+## We want to welcome our viewers in the United States and around the world. I&#39;m Wolf
+## Blitzer. This debate overnor Kasich?
+## 
+## KASICH: Well, you know, on the way over here, even getting ready earlier and sitting
+## in the green room and watching the early coverage, you know, my father carried mail
+## on his back and his father was a coal miner and my mother&#39;s mother was an
+## 
+## https://www.nytimes.com/2016/02/26/us/politics/transcript-of-the-republican-presidential-debate-in-houston.html
+## Transcript of the Republican Presidential Debate in Houston - The New York Times                                 20/09/2018, 11)09
+##                                                                                                                          Page 4 of 74
+## on his back and h</code></pre>
+<p>Now that we have this as one “document”, we need to load it into the <strong>quanteda</strong> package for processing and analysis.</p>
+<pre class="r"><code>require(quanteda, warn.conflicts = FALSE, quietly = TRUE)</code></pre>
+<pre class="r"><code>transcriptCorpus &lt;- corpus(transcriptText, metacorpus = list(
+  source = &quot;http://nyti.ms/1QJs7R9&quot;,
+  notes = &quot;10th Republican candidate debate, Houston TX 2016-02-25&quot;))</code></pre>
+<pre class="r"><code>summary(transcriptCorpus)</code></pre>
+<pre><code>## Corpus consisting of 1 document:
+## 
+##   Text Types Tokens Sentences
+##  text1  3219  33523      1885
+## 
+## Source: http://nyti.ms/1QJs7R9
+## Created: Sat Sep 22 21:21:21 2018
+## Notes: 10th Republican candidate debate, Houston TX 2016-02-25</code></pre>
+<p>Our goal in order to analyze this by speaker, is to redefine the corpus as a set of documents defined as a single speech acts, with a document variable identifying the speaker. We accomplish this through the <code>corpus_segment()</code> method:</p>
+<pre class="r"><code>transcriptCorpus &lt;- corpus_segment(transcriptCorpus, pattern = &quot;\\s*[[:upper:]]+:\\s+&quot;, valuetype = &quot;regex&quot;)</code></pre>
+<pre class="r"><code>summary(transcriptCorpus, 10)</code></pre>
+<pre><code>## Corpus consisting of 579 documents, showing 10 documents:
+## 
+##      Text Types Tokens Sentences       pattern
+##   text1.1    14     15         1 \n\nBLITZER: 
+##   text1.2   198    329        17     BLITZER: 
+##   text1.3    58     74         2     BLITZER: 
+##   text1.4    24     28         3     BLITZER: 
+##   text1.5   114    196        12     BLITZER: 
+##   text1.6    68     92         5  \n\nCARSON: 
+##   text1.7     3      3         1     BLITZER: 
+##   text1.8   126    223        10  \n\nKASICH: 
+##   text1.9     3      3         1     BLITZER: 
+##  text1.10    90    161         8   \n\nRUBIO: 
+## 
+## Source: http://nyti.ms/1QJs7R9
+## Created: Sat Sep 22 21:21:22 2018
+## Notes: corpus_segment.corpus(transcriptCorpus, pattern = &quot;\\s*[[:upper:]]+:\\s+&quot;, valuetype = &quot;regex&quot;)</code></pre>
+<p>We can clean up the patterns:</p>
+<pre class="r"><code>docvars(transcriptCorpus, &quot;pattern&quot;) &lt;- stri_trim_both(docvars(transcriptCorpus, &quot;pattern&quot;))
+docvars(transcriptCorpus, &quot;pattern&quot;) &lt;- gsub(&quot;:&quot;, &quot;&quot;, docvars(transcriptCorpus, &quot;pattern&quot;))
+docvars(transcriptCorpus, &quot;pattern&quot;) &lt;- gsub(&quot;ARRARAS&quot;, &quot;ARRASAS&quot;, docvars(transcriptCorpus, &quot;pattern&quot;))</code></pre>
+<pre class="r"><code>transcriptCorpus &lt;- corpus_subset(transcriptCorpus, !(pattern %in% c(&quot;MALE&quot;, &quot;COOPER&quot;)))</code></pre>
+<pre class="r"><code>summary(transcriptCorpus, 10)</code></pre>
+<pre><code>## Corpus consisting of 577 documents, showing 10 documents:
+## 
+##      Text Types Tokens Sentences pattern
+##   text1.1    14     15         1 BLITZER
+##   text1.2   198    329        17 BLITZER
+##   text1.3    58     74         2 BLITZER
+##   text1.4    24     28         3 BLITZER
+##   text1.5   114    196        12 BLITZER
+##   text1.6    68     92         5  CARSON
+##   text1.7     3      3         1 BLITZER
+##   text1.8   126    223        10  KASICH
+##   text1.9     3      3         1 BLITZER
+##  text1.10    90    161         8   RUBIO
+## 
+## Source: http://nyti.ms/1QJs7R9
+## Created: Sat Sep 22 21:21:22 2018
+## Notes: corpus_segment.corpus(transcriptCorpus, pattern = &quot;\\s*[[:upper:]]+:\\s+&quot;, valuetype = &quot;regex&quot;)</code></pre>
+<pre class="r"><code>table(docvars(transcriptCorpus, &quot;pattern&quot;))</code></pre>
+<pre><code>## 
+##      aid  ARRASAS     BASH  BLITZER   CARSON  CELESTE     CRUZ   HEWITT 
+##        1       26       26      108       16        1       75       27 
+##  inTRUMP   KASICH      now question    RUBIO    stand    TRUMP 
+##        1       26        2        1      101        1      165</code></pre>
+<p>Now we can start to perfom some analysis on the text. Who spoke the most in the debate, in words?</p>
+<pre class="r"><code>par(mar = c(5, 6, .5, 1))
+barplot(sort(ntoken(texts(transcriptCorpus, groups = &quot;pattern&quot;), removePunct = TRUE)), horiz = TRUE, las = 1, xlab = &quot;Total Words Spoken&quot;)</code></pre>
+<p><img src="/post/text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-html/barplot-1.png" width="672" /></p>
+<p>The <code>ntoken()</code> function does the work here of counting the tokens in the vector of texts returned by the call to <code>transcriptCorpus, groups = &quot;pattern&quot;</code>, which extracts the texts from our segmented corpus and concatenates all texts by speaker. This results in a vector of the same 10 speakers as in our tabulation above. Passing through the <code>removePunct = TRUE</code> option in the <code>ntoken()</code> call sends this argument through to <code>tokenize()</code>, meaning we will not count punctutation characters as tokens. (See <code>?quanteda::tokenize</code> for details.)</p>
+<p>If we wanted to go further, we convert the segmented corpus into a <em>document-feature matrix</em> and apply one of many available psychological dictionaries to analyze the tone of each candidate’s remarks. Here I will demonstrate using the Regressive Imagery Dictionary, from Martindale, C. (1975) <em>Romantic progression: The psychology of literary history.</em> Washington, D.C.: Hemisphere. The code below automatically downloads a version of this dictionary in a format prepared for the WordStat software by Provalis, available from <a href="http://www.provalisresearch.com/Download/RID.ZIP" class="uri">http://www.provalisresearch.com/Download/RID.ZIP</a>. <strong>quanteda</strong> can import dictionaries formatted for WordStat, using the <code>dictionary()</code> function.</p>
+<p>Here, we will apply the RID dictionary to find out who used what degree of “glory”-oriented language. (You might be able to guess the results already.)</p>
+<pre class="r"><code>RIDdict &lt;- dictionary(file = &quot;files/RID.CAT&quot;, format = &quot;wordstat&quot;)</code></pre>
+<pre class="r"><code>file.remove(&quot;RID.zip&quot;, &quot;RID.CAT&quot;, &quot;RID.exc&quot;)</code></pre>
+<pre class="r"><code>RIDdict$EMOTIONS$GLORY</code></pre>
+<pre><code>##  [1] &quot;admir*&quot;         &quot;admirabl*&quot;      &quot;adventur*&quot;      &quot;applaud*&quot;      
+##  [5] &quot;applaus*&quot;       &quot;arroganc*&quot;      &quot;arrogant*&quot;      &quot;audacity*&quot;     
+##  [9] &quot;awe*&quot;           &quot;boast*&quot;         &quot;boastful*&quot;      &quot;brillianc*&quot;    
+## [13] &quot;brilliant*&quot;     &quot;caesar*&quot;        &quot;castl*&quot;         &quot;conque*&quot;       
+## [17] &quot;crown*&quot;         &quot;dazzl*&quot;         &quot;eagl*&quot;          &quot;elit*&quot;         
+## [21] &quot;emperor*&quot;       &quot;empir*&quot;         &quot;exalt*&quot;         &quot;exhibit*&quot;      
+## [25] &quot;exquisit*&quot;      &quot;extraordinary*&quot; &quot;extrem*&quot;        &quot;fame&quot;          
+## [29] &quot;famed&quot;          &quot;famou*&quot;         &quot;foremost*&quot;      &quot;geniu*&quot;        
+## [33] &quot;glor*&quot;          &quot;gold*&quot;          &quot;golden*&quot;        &quot;grandeur*&quot;     
+## [37] &quot;great*&quot;         &quot;haughty*&quot;       &quot;hero*&quot;          &quot;homag*&quot;        
+## [41] &quot;illustriou*&quot;    &quot;kingdom*&quot;       &quot;magestic*&quot;      &quot;magnificent*&quot;  
+## [45] &quot;majestic*&quot;      &quot;majesty*&quot;       &quot;nobl*&quot;          &quot;outstand*&quot;     
+## [49] &quot;palac*&quot;         &quot;pomp*&quot;          &quot;prestig*&quot;       &quot;prid*&quot;         
+## [53] &quot;princ*&quot;         &quot;proud*&quot;         &quot;renown*&quot;        &quot;resplendent*&quot;  
+## [57] &quot;rich*&quot;          &quot;royal*&quot;         &quot;royalty*&quot;       &quot;sceptr*&quot;       
+## [61] &quot;scorn*&quot;         &quot;splendid*&quot;      &quot;splendor*&quot;      &quot;strut*&quot;        
+## [65] &quot;sublim*&quot;        &quot;superior*&quot;      &quot;superiority*&quot;   &quot;suprem*&quot;       
+## [69] &quot;thron*&quot;         &quot;triump*&quot;        &quot;victor*&quot;        &quot;victoriou*&quot;    
+## [73] &quot;victory*&quot;       &quot;wealth*&quot;        &quot;wonder*&quot;        &quot;wonderful*&quot;</code></pre>
+<p>Now we will extract just the candidates, using the <code>subset()</code> method for a corpus class object, and then create a document-feature matrix from this corpus, grouping the documents by speaker as we did before.</p>
+<pre class="r"><code>transcriptCorpusCands &lt;- corpus_subset(transcriptCorpus, pattern %in% c(&quot;TRUMP&quot;, &quot;CRUZ&quot;, &quot;RUBIO&quot;, &quot;KASICH&quot;, &quot;CARSON&quot;))
+canddfm &lt;- dfm(transcriptCorpusCands, groups = &quot;pattern&quot;)</code></pre>
+<p>Because the texts are of different lengths, we want to normalize them (by converting the feature counts into vectors of relative frequencies within document):</p>
+<pre class="r"><code>canddfmRel &lt;- dfm_weight(canddfm, &quot;prop&quot;)</code></pre>
+<p>Now we are in a position to apply the RID to the dfm, which matches on the “glob” formatted wildcard expressions that form the values of the RID in our <code>RIDdict</code> object.</p>
+<pre class="r"><code>canddfmRelRID &lt;- dfm_lookup(canddfmRel, RIDdict)
+head(canddfmRelRID)</code></pre>
+<pre><code>## Document-feature matrix of: 5 documents, 43 features (22.8% sparse).</code></pre>
+<pre class="r"><code>topfeatures(canddfmRelRID, n = 20)</code></pre>
+<pre><code>##          SECONDARY.ABSTRACT_TOUGHT          SECONDARY.TEMPORAL_REPERE 
+##                        0.127300616                        0.110398994 
+##          SECONDARY.SOCIAL_BEHAVIOR          SECONDARY.INSTRU_BEHAVIOR 
+##                        0.106182206                        0.091778700 
+##     PRIMARY.REGR_KNOL.CONCRETENESS         SECONDARY.MORAL_IMPERATIVE 
+##                        0.085313020                        0.033867891 
+##                EMOTIONS.AGGRESSION           PRIMARY.SENSATION.VISION 
+##                        0.029125328                        0.022976655 
+##                SECONDARY.RESTRAINT                 EMOTIONS.AFFECTION 
+##                        0.018554289                        0.017917377 
+##    PRIMARY.REGR_KNOL.BRINK-PASSAGE                    SECONDARY.ORDER 
+##                        0.015878285                        0.014893601 
+##          PRIMARY.ICARIAN_IM.HEIGHT                     EMOTIONS.GLORY 
+##                        0.013706173                        0.008801339 
+## PRIMARY.DEFENSIVE_SYMBOL.PASSIVITY       PRIMARY.REGR_KNOL.NARCISSISM 
+##                        0.007931518                        0.007826854 
+##    PRIMARY.DEFENSIVE_SYMBOL.VOYAGE    PRIMARY.SENSATION.GEN_SENSATION 
+##                        0.006716670                        0.006692669 
+##               PRIMARY.NEED.ORALITY           PRIMARY.ICARIAN_IM.WATER 
+##                        0.005959470                        0.005910077</code></pre>
+<p>We could probably spend a whole day analyzing this information, but here, let’s simply compare candidates on their relative use of language in the “Emotions: Glory” category of the RID. We do this by slicing out the feature with this label, converting this to a vector (as there is no <code>drop = TRUE</code> option for dfm indexing), and then reattaching the document labels to this vector so that it will be named vector. We then send it to the <code>dotchart()</code> for a simple plot, showing that Trump was by far the highest user of this type of language.</p>
+<pre class="r"><code>canddfmRelRID[, &quot;EMOTIONS.GLORY&quot;]</code></pre>
+<pre><code>## Document-feature matrix of: 5 documents, 1 feature (0% sparse).
+## 5 x 1 sparse Matrix of class &quot;dfm&quot;
+##         features
+## docs     EMOTIONS.GLORY
+##   CARSON   0.0004418913
+##   CRUZ     0.0023892667
+##   KASICH   0.0015466195
+##   RUBIO    0.0009104151
+##   TRUMP    0.0035131460</code></pre>
+<pre class="r"><code>glory &lt;- as.vector(canddfmRelRID[, &quot;EMOTIONS.GLORY&quot;])
+names(glory) &lt;- docnames(canddfmRelRID)
+dotchart(sort(glory), xlab = &quot;RID \&quot;Glory\&quot; terms used as a proportion of all terms&quot;,
+         pch = 19, xlim = c(0, .005))</code></pre>
+<p><img src="/post/text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-html/dotchart-1.png" width="672" /></p>
