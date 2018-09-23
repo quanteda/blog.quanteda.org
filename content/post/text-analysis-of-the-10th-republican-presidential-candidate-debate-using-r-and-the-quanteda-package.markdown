@@ -19,26 +19,7 @@ To read this text, I then called the utility ```pdftotext```, described in this 
 
 
 ```r
-transcriptText <- system2("pdftotext", args = "-layout ~/Desktop/republican_debate_2016-02-25.pdf -", stdout = TRUE)
-```
-
-
-```r
-Encoding(transcriptText) <- "UTF-8"
-```
-
-The first command performs the conversion using the ```system2()``` call, sends this to “stdout”, which is assigned in R to ```transcriptText```, a character vector consisting of one element per line of the text. The ```-layout``` argument to ```pdftotext``` preserves the formatting as printed in the original text. If we inspect the first 17 lines, we see the text, which includes tags for each speaker’s name in capitals, and parenthetical remarks such as “(APPLAUSE)” denoting non-text events.
-
-
-```r
-cat(paste(transcriptText[6:22], collapse = "\n"))
-```
-
-To make this a single text object, we will paste the lines together, joining them with the \n characters that separated them originally.
-
-
-```r
-transcriptText <- paste(transcriptText, collapse = "\n")
+transcriptText <- readtext::readtext("files/republican_debate_2016-02-25.pdf")
 ```
 
 To get only the text spoken by each candidate, we still need to remove some of the extra text at the beginning and the end of the article, and we need to remove the non-text markers for events such as applause. We can do this using a substitution of the text we wish to remove for the null string "", using ```gsub()```.
