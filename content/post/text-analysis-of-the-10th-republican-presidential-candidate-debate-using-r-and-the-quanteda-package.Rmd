@@ -1,7 +1,7 @@
 ---
 title: "Text analysis of the 10th Republican Presidential candidate debate using R and the quanteda package"
 author: "Kenneth Benoit and Gokhan Ciflikli"
-date: "2016-02-26T02:00:00+02:00"
+date: "2016-02-26"
 tags: ["blog"]
 output: html_document
 ---
@@ -13,11 +13,11 @@ opts_chunk$set(echo = TRUE, tidy = TRUE)
 
 On 25 February 2016, the tenth debate among the Republican candidates for the 2016 Presidential election took place in Houston, Texas, moderated by CNN. In this demonstration of the [quanteda](https://github.com/kbenoit/quanteda) package, I will show how to download, import, clean, parse by speaker, and analyze the debate by speaker.
 
-The first step involves loading the debate into R.  To read this text, we can use the **xml2** package, which will automatically extract text from the [US Presidency Project website](http://www.presidency.ucsb.edu/ws/index.php?pid=111634).
+The first step involves loading the debate into R.  To read this text, we can use the **rvest** package, which will automatically extract text from the [US Presidency Project website](http://www.presidency.ucsb.edu/ws/index.php?pid=111634).
 
 ```{r read in pdf, eval = TRUE}
 library("rvest")
-scraping <- xml2::read_html("http://www.presidency.ucsb.edu/ws/index.php?pid=111634")
+scraping <- read_html("http://www.presidency.ucsb.edu/ws/index.php?pid=111634")
 transcriptText <- scraping %>%
                     html_nodes("p") %>%
                       html_text()
