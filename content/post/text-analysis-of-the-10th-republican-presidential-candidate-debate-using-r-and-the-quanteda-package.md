@@ -1,3 +1,11 @@
++++
+title = "Text analysis of the 10th Republican Presidential candidate debate using R and the quanteda package"
+date = "2016-02-26T02:00:00+02:00"
+tags = ["blog"]
+author = "Ken Benoit, Gokhan Ciflikli"
++++
+
+
 On 25 February 2016, the tenth debate among the Republican candidates
 for the 2016 Presidential election took place in Houston, Texas,
 moderated by CNN. In this demonstration of the
