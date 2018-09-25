@@ -15,23 +15,20 @@ On 25 February 2016, the tenth debate among the Republican candidates for the 20
 
 The first step involves loading the debate into R. I got the debate from the [New York Times publication of the transcript](http://www.nytimes.com/2016/02/26/us/politics/transcript-of-the-republican-presidential-debate-in-houston.html?action=click&contentCollection=Politics&module=RelatedCoverage&region=Marginalia&pgtype=article). It’s possible to copy and paste the text into a text editor, but because of headers, sidebar ads, and image captions, this necessitates a lot of cleaning afteward. To get around this, I printed the article to a pdf file, saved as `files/republican_debate_2016-02-25.pdf`.
 
-To read this text, we can use the **readtext** package, which will automatically read and convert the input file.
-
-# would make more sense to get it from http://www.presidency.ucsb.edu/ws/index.php?pid=111634 using rvest
+To read this text, we can use the **xml2** package, which will automatically extract text from the [US Presidency Project website](http://www.presidency.ucsb.edu/ws/index.php?pid=111634).
 
 ```{r read in pdf, eval = TRUE}
-transcriptText <- readtext::readtext("files/republican_debate_2016-02-25.pdf")[["text"]]
+scraping <- xml2::read_html("http://www.presidency.ucsb.edu/ws/index.php?pid=111634")
+transcriptText <- scraping %>%
+                    html_nodes("p") %>%
+                      html_text()
 ```
 
-To get only the text spoken by each candidate, we still need to remove some of the extra text at the beginning and the end of the article, and we need to remove the non-text markers for events such as applause. We can do this using a substitution of the text we wish to remove for the null string "", using `gsub()`.
+To get only the text spoken by each candidate, we still need to remove the non-text markers for events such as applause. We can do this using a substitution of the text we wish to remove for the null string "", using `gsub()`.
 
 ```{r regex, eval = TRUE}
-# remove the running header
-transcriptText <- gsub("Transcript of the Republican(.*?)11\\)09", "\\n", transcriptText)
 # removes interjections
-transcriptText <- gsub("\\s*\\((APPLAUSE|BELL RINGS|BELL RINGING|THE STAR-SPANGLED BANNER|COMMERCIAL BREAK|CROSSTALK|inaudible|LAUGHTER|CHEERING)\\)\\s*", " ", transcriptText)
-# removes the URL footers
-transcriptText <- gsub("https:(.*?)\\d+\\sof\\s\\d+", "", transcriptText)
+transcriptText <- gsub("\\s*\\[(APPLAUSE|BELL RINGS|BELL RINGING|THE STAR-SPANGLED BANNER|COMMERCIAL BREAK|CROSSTALK|inaudible|LAUGHTER|CHEERING)\\]\\s*", "", ignore.case = TRUE, transcriptText)
 ```
 
 ```{r paste3, eval = TRUE}
