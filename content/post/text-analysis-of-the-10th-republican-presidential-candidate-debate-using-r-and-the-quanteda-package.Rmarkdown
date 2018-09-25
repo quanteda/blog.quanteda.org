@@ -1,6 +1,6 @@
 ---
 title: "Text analysis of the 10th Republican Presidential candidate debate using R and the quanteda package"
-author: "Kenneth Benoit"
+author: "Kenneth Benoit and Gokhan Ciflikli"
 date: "2016-02-26T02:00:00+02:00"
 tags: ["blog"]
 output: html_document
@@ -13,11 +13,10 @@ opts_chunk$set(echo = TRUE, tidy = TRUE)
 
 On 25 February 2016, the tenth debate among the Republican candidates for the 2016 Presidential election took place in Houston, Texas, moderated by CNN. In this demonstration of the [quanteda](https://github.com/kbenoit/quanteda) package, I will show how to download, import, clean, parse by speaker, and analyze the debate by speaker.
 
-The first step involves loading the debate into R. I got the debate from the [New York Times publication of the transcript](http://www.nytimes.com/2016/02/26/us/politics/transcript-of-the-republican-presidential-debate-in-houston.html?action=click&contentCollection=Politics&module=RelatedCoverage&region=Marginalia&pgtype=article). It’s possible to copy and paste the text into a text editor, but because of headers, sidebar ads, and image captions, this necessitates a lot of cleaning afteward. To get around this, I printed the article to a pdf file, saved as `files/republican_debate_2016-02-25.pdf`.
-
-To read this text, we can use the **xml2** package, which will automatically extract text from the [US Presidency Project website](http://www.presidency.ucsb.edu/ws/index.php?pid=111634).
+The first step involves loading the debate into R.  To read this text, we can use the **xml2** package, which will automatically extract text from the [US Presidency Project website](http://www.presidency.ucsb.edu/ws/index.php?pid=111634).
 
 ```{r read in pdf, eval = TRUE}
+library("rvest")
 scraping <- xml2::read_html("http://www.presidency.ucsb.edu/ws/index.php?pid=111634")
 transcriptText <- scraping %>%
                     html_nodes("p") %>%
@@ -43,7 +42,7 @@ require(quanteda, warn.conflicts = FALSE, quietly = TRUE)
 
 ```{r corpus, eval = TRUE}
 transcriptCorpus <- corpus(transcriptText, metacorpus = list(
-  source = "http://nyti.ms/1QJs7R9",
+  source = "http://www.presidency.ucsb.edu/ws/index.php?pid=111634",
   notes = "10th Republican candidate debate, Houston TX 2016-02-25"))
 ```
 
@@ -64,7 +63,7 @@ summary(transcriptCorpus, 10)
 We can clean up the patterns:
 
 ```{r clean up tags, eval = TRUE}
-docvars(transcriptCorpus, "pattern") <- stri_trim_both(docvars(transcriptCorpus, "pattern"))
+docvars(transcriptCorpus, "pattern") <- stringi::stri_trim_both(docvars(transcriptCorpus, "pattern"))
 docvars(transcriptCorpus, "pattern") <- gsub(":", "", docvars(transcriptCorpus, "pattern"))
 docvars(transcriptCorpus, "pattern") <- gsub("ARRARAS", "ARRASAS", docvars(transcriptCorpus, "pattern"))
 ```
@@ -95,16 +94,21 @@ If we wanted to go further, we convert the segmented corpus into a _document-fea
 Here, we will apply the RID dictionary to find out who used what degree of “glory”-oriented language. (You might be able to guess the results already.)
 
 ```{r dictionary, eval = TRUE}
-# add back code to download the file
+# get the RID from the Provalis website
+RIDzipfile <- download.file("http://provalisresearch.com/Download/RID.ZIP", "RID.zip")
+unzip("RID.zip")
 data_dictionary_RID <- dictionary(file = "RID.CAT", format = "wordstat")
-```
-
-```{r file remove, eval = TRUE}
 file.remove("RID.zip", "RID.CAT", "RID.exc")
 ```
 
+This is a nested dictionary object with three primary keys:
+```{r dictionary names, eval = TRUE}
+names(data_dictionary_RID)
+```
+
+We can inspect the category we will use ("Glory") by looking at the last sub-key of the third key, "Emotions".
 ```{r dictionary tail, eval = TRUE}
-tail(data_dictionary_RID, 1)
+tail(data_dictionary_RID[["EMOTIONS"]], 1)
 ```
 
 Now we will extract just the candidates, using the `subset()` method for a corpus class object, and then create a document-feature matrix from this corpus, grouping the documents by speaker as we did before.
