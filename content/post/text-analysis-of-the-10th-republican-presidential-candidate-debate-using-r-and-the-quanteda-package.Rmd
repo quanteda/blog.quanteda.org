@@ -3,7 +3,7 @@ title: "Text analysis of the 10th Republican Presidential candidate debate using
 author: "Kenneth Benoit and Gokhan Ciflikli"
 date: "2016-02-26"
 tags: ["blog"]
-output: html_document
+output: md_document
 ---
 
 ```{r setup, include=FALSE, eval = TRUE}
