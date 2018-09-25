@@ -98,7 +98,7 @@ If we wanted to go further, we convert the segmented corpus into a _document-fea
 Here, we will apply the RID dictionary to find out who used what degree of “glory”-oriented language. (You might be able to guess the results already.)
 
 ```{r dictionary, eval = TRUE}
-data(data_dictionary_RID, package = "quanteda.dictionaries")
+# add back code to download the file
 data_dictionary_RID <- dictionary(file = "RID.CAT", format = "wordstat")
 ```
 
