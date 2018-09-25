@@ -10,7 +10,7 @@ googleAnalytics = ""
 # Posts per page
 paginate = 10
 # Comment the themesDir option if you use this theme in production
-ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
+ignoreFiles = [_files$", "_cache$"]
 
 [permalinks]
     post = "/:year/:month/:day/:slug/"
