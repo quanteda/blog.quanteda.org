@@ -1,19 +1,30 @@
 	{{ partial "head.html" . }}
 	<body>
 		{{ partial "nav.html" . }}
-
-		<div class="content">
-			<div class="home">
-
-				{{ if .Site.Params.headerText }}
-				<div class="call-out" style="background-image: url('{{ .Site.BaseURL }}/img/{{ .Site.Params.headerImage }}')">
-					{{ .Site.Params.headerText | markdownify }}
-				</div>
+		
+		<section id="maincontent">
+    <div class="container">
+      <div class="row">
+        <div class="span3">
+          <aside style="margin-top:150px">
+           {{ partial "sidebar.html" . }}
+          </aside>
+        </div>
+        <div class="span9">
+          <div class="content">
+			      <div class="home">
+			        {{ if .Site.Params.headerText }}
+			        <div class="call-out" style="background-image: url('{{ .Site.BaseURL }}/img/{{ .Site.Params.headerImage }}')">
+			          {{ .Site.Params.headerText | markdownify }}
+			        </div>
 				{{ end }}
 
 				{{ partial "post-list.html" . }}
 				{{ partial "pagination.html" . }}
-
+ 
+    </div>
+</section>
+		
 				{{ partial "footer.html" . }}
 
 			</div>
