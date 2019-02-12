@@ -14,7 +14,7 @@ A frequent problem in processing texts is the need to segment one or few documen
 
 This is a frequent feature of interview or debate **transcripts**, for instance, where a single long source document might contain numerous speech acts from individual speakers.  For analysis, it's likely that we would want to consider these speakers separately, perhaps with the ability to combine their speech acts later by spearker.
 
-Here, we show how this can be done using the [**quanteda** R package](https://quanteda.io), using a debate from the 2016 U.S. presidential election campaign.  This was the tenth debate among the Republican candidates for the 2016 election, and took place in Houston, Texas on 25 February 2016, and was moderated by CNN.  We demonstrate how to download, import, clean, parse by speaker, and analyze the debate by speaker.
+Here, we show how this can be done using the [**quanteda** R package](https://quanteda.io), using a debate from the 2016 U.S. presidential election campaign.  This was the tenth debate among the Republican candidates for the 2016 election, took place in Houston, Texas on 25 February 2016, and was moderated by CNN.  We demonstrate how to download, import, clean, parse by speaker, and analyze the debate by speaker.
 
 ## Getting the text into R
 
@@ -185,7 +185,9 @@ dfmatcand <- dfm_weight(dfmatcand, "prop")
 Now we are in a position to apply the RID to the dfm, which matches on the "glob" formatted wildcard expressions that form the values of the RID in our `data_dictionary_RID` object.
 ```{r}
 dfmatcandRID <- dfm_lookup(dfmatcand, dictionary = data_dictionary_RID)
-head(dfmatcandRID, nf = 4) %>% 
+
+head(dfmatcandRID, nf = 4) %>%
+    convert(to = "data.frame") %>% 
     knitr::kable()
 ```
 
