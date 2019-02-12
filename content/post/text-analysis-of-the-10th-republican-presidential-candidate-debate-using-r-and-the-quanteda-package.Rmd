@@ -7,7 +7,7 @@ output: md_document
 ---
 
 ```{r, echo = FALSE}
-knitr::opts_chunk$set(echo = TRUE, tidy = TRUE, collapse = TRUE)
+knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
 ```
 
 A frequent problem in processing texts is the need to segment one or few documents into many documents, based on segments that they contain marking units that the analyst will want to consider seperately.

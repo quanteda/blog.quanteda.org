@@ -26,7 +26,9 @@ website](http://www.presidency.ucsb.edu/ws/index.php?pid=111634).
     library("rvest")
     ## Loading required package: xml2
     scraping <- read_html("http://www.presidency.ucsb.edu/ws/index.php?pid=111634")
-    txt <- scraping %>% html_nodes("p") %>% html_text()
+    txt <- scraping %>%
+        html_nodes("p") %>%
+        html_text()
 
 We can see what the text looks like by examining the first and last
 parts of the text.
@@ -61,8 +63,9 @@ the powerful **stringi** package’s `stri_replace_all_regex()` function.
 
     library("stringi", verbose = FALSE)
     # removes interjections
-    txt <- stri_replace_all_regex(txt, "\\s*\\[(APPLAUSE|BELL RINGS|BELL RINGING|THE STAR-SPANGLED BANNER|COMMERCIAL BREAK|CROSSTALK|inaudible|LAUGHTER|CHEERING)\\]\\s*", 
-        "", case_insensitive = TRUE)
+    txt <- stri_replace_all_regex(txt, 
+                                  "\\s*\\[(APPLAUSE|BELL RINGS|BELL RINGING|THE STAR-SPANGLED BANNER|COMMERCIAL BREAK|CROSSTALK|inaudible|LAUGHTER|CHEERING)\\]\\s*", "",
+                                  case_insensitive = TRUE)
 
 Now we can see that the tags such as “\[applause\]” are removed.
 
@@ -87,8 +90,9 @@ single element. This creates a single “document” from the debate
 transcript. (Had we not scraped the document, for instance, it’s quite
 possible that we would have input it as a single document.)
 
-    corp <- corpus(paste(txt, collapse = "\n"), metacorpus = list(source = "http://www.presidency.ucsb.edu/ws/index.php?pid=111634", 
-        notes = "10th Republican candidate debate, Houston TX 2016-02-25"))
+    corp <- corpus(paste(txt, collapse = "\n"), metacorpus = list(
+      source = "http://www.presidency.ucsb.edu/ws/index.php?pid=111634",
+      notes = "10th Republican candidate debate, Houston TX 2016-02-25"))
 
 We can now use the `summary()` method for a corpus object to see a bit
 of information about the corpus we have just created.
@@ -100,7 +104,7 @@ of information about the corpus we have just created.
     ##  text1  3051  29978      2002
     ## 
     ## Source: http://www.presidency.ucsb.edu/ws/index.php?pid=111634
-    ## Created: Tue Feb 12 12:22:38 2019
+    ## Created: Tue Feb 12 12:30:19 2019
     ## Notes: 10th Republican candidate debate, Houston TX 2016-02-25
 
 Our goal in order to analyze this by speaker, is to redefine the corpus
@@ -113,8 +117,7 @@ space. We can turn this into a [regular
 expression](https://www.regular-expressions.info/), and feed it as the
 `pattern` argument to the function `corpus_segment()`.
 
-    corpseg <- corpus_segment(corp, pattern = "\\s*[[:upper:]]+:\\s+", valuetype = "regex", 
-        case_insensitive = FALSE)
+    corpseg <- corpus_segment(corp, pattern = "\\s*[[:upper:]]+:\\s+", valuetype = "regex", case_insensitive = FALSE)
 
 We needed to add `case_insensitive = FALSE` because otherwise, the upper
 case character class will be overwritten, and we will pick up matches
@@ -139,7 +142,7 @@ extracting the regular expression. match in the text to `pattern`
     ##  text1.10    98    164        10          \nKASICH: 
     ## 
     ## Source: http://www.presidency.ucsb.edu/ws/index.php?pid=111634
-    ## Created: Tue Feb 12 12:22:38 2019
+    ## Created: Tue Feb 12 12:30:19 2019
     ## Notes: corpus_segment.corpus(corp, pattern = "\\s*[[:upper:]]+:\\s+", valuetype = "regex", case_insensitive = FALSE)
 
 Let’s rename `pattern` to something more descriptive, such as `speaker`.
@@ -151,11 +154,9 @@ docvars and replace it.
 We can clean up the patterns further through some replacements.
 
     docvars(corpseg, "speaker") <- stri_trim_both(docvars(corpseg, "speaker"))
-    docvars(corpseg, "speaker") <- stri_replace_all_fixed(docvars(corpseg, "speaker"), 
-        ":", "")
+    docvars(corpseg, "speaker") <- stri_replace_all_fixed(docvars(corpseg, "speaker"), ":", "")
     # a misspelling in the transcript
-    docvars(corpseg, "speaker") <- stri_replace_all_fixed(docvars(corpseg, "speaker"), 
-        "ARRARAS", "ARRASAS")
+    docvars(corpseg, "speaker") <- stri_replace_all_fixed(docvars(corpseg, "speaker"), "ARRARAS", "ARRASAS")
 
 Now we can see that the tags are better:
 
@@ -173,8 +174,8 @@ so let’s remove the moderator Wolf Blitzer, the panelists Dana Bash,
 Maria Celeste Arrarás, and Hugh Hewitt, and the generic tags
 “Moderator”, “Participants”, and “Panelists”.
 
-    corpcand <- corpus_subset(corpseg, !(speaker %in% c("ARRARÁS", "BASH", "BLITZER", 
-        "HEWITT", "MODERATOR", "PANELISTS", "PARTICIPANTS")))
+    corpcand <- corpus_subset(corpseg, !(speaker %in% c("ARRARÁS", "BASH", "BLITZER", "HEWITT",
+                                                        "MODERATOR", "PANELISTS", "PARTICIPANTS")))
 
 Now we have only statements from the five Republican candidates in our
 corpus.
@@ -189,17 +190,20 @@ corpus.
 Who spoke the most? In terms of speech acts, we can tabulate the
 speakers and plot the number of times each spoke as a barplot.
 
-    par(mar = c(5, 6, 0.5, 1))
-    table(docvars(corpcand, "speaker")) %>% sort() %>% barplot(horiz = TRUE, las = 1, 
-        xlab = "Total Times Speaking")
+    par(mar = c(5, 6, .5, 1))
+    table(docvars(corpcand, "speaker")) %>%
+        sort() %>%
+        barplot(horiz = TRUE, las = 1, xlab = "Total Times Speaking")
 
 ![](text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-markdown_strict/unnamed-chunk-16-1.png)
 
 We might also be interested, of course, in who spoke the most in words.
 We can get the individual words from `ntoken()`.
 
-    par(mar = c(5, 6, 0.5, 1))
-    texts(corpcand, groups = "speaker") %>% ntoken(remove_punct = TRUE) %>% sort() %>% 
+    par(mar = c(5, 6, .5, 1))
+    texts(corpcand, groups = "speaker") %>%
+        ntoken(remove_punct = TRUE) %>%
+        sort() %>%
         barplot(horiz = TRUE, las = 1, xlab = "Total Words Spoken")
 
 ![](text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-markdown_strict/unnamed-chunk-17-1.png)
@@ -232,8 +236,7 @@ of “glory”-oriented language. (You might be able to guess the results
 already.)
 
     # get the RID from the Provalis website
-    RIDzipfile <- download.file("http://provalisresearch.com/Download/RID.ZIP", 
-        "RID.zip")
+    RIDzipfile <- download.file("http://provalisresearch.com/Download/RID.ZIP", "RID.zip")
     unzip("RID.zip")
     data_dictionary_RID <- dictionary(file = "RID.CAT", format = "wordstat")
     file.remove("RID.zip", "RID.CAT", "RID.exc")
@@ -400,8 +403,8 @@ the highest user of this type of language.
 
     glory <- as.vector(dfmatcandRID[, "EMOTIONS.GLORY"])
     names(glory) <- docnames(dfmatcandRID)
-    dotchart(sort(glory), xlab = "RID \"Glory\" terms used as a proportion of all terms", 
-        pch = 19, xlim = c(0, 0.005))
+    dotchart(sort(glory), xlab = "RID \"Glory\" terms used as a proportion of all terms",
+             pch = 19, xlim = c(0, .005))
 
 ![](text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-markdown_strict/unnamed-chunk-26-1.png)
 
@@ -416,7 +419,10 @@ For instance, we can easily determine which words were used mnost
 differentially by Trump versus Cruz using some “keyness” statistics and
 plots.
 
-    dfm(corpcand) %>% dfm_group(groups = "speaker") %>% dfm_subset(speaker %in% 
-        c("TRUMP", "CRUZ")) %>% textstat_keyness(target = "TRUMP") %>% textplot_keyness()
+    dfm(corpcand) %>%
+        dfm_group(groups = "speaker") %>%
+        dfm_subset(speaker %in% c("TRUMP", "CRUZ")) %>%
+        textstat_keyness(target = "TRUMP") %>%
+        textplot_keyness()
 
 ![](text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-markdown_strict/unnamed-chunk-27-1.png)
