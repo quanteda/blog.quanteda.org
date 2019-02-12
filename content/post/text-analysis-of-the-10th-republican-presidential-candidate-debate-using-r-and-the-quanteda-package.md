@@ -11,7 +11,7 @@ ability to combine their speech acts later by spearker.
 Here, we show how this can be done using the [**quanteda** R
 package](https://quanteda.io), using a debate from the 2016 U.S.
 presidential election campaign. This was the tenth debate among the
-Republican candidates for the 2016 election, and took place in Houston,
+Republican candidates for the 2016 election, took place in Houston,
 Texas on 25 February 2016, and was moderated by CNN. We demonstrate how
 to download, import, clean, parse by speaker, and analyze the debate by
 speaker.
@@ -83,8 +83,9 @@ Let’s now put this into a single document, to create as a **quanteda**
 corpus object for processing and analysis.
 
     library("quanteda", warn.conflicts = FALSE, quietly = TRUE)
+    ## Warning: package 'quanteda' was built under R version 3.5.2
     ## Package version: 1.4.0
-    ## Parallel computing: 2 of 12 threads used.
+    ## Parallel computing: 2 of 4 threads used.
     ## See https://quanteda.io for tutorials and examples.
 
 Because we want this as a single document, we will combine all of the
@@ -110,7 +111,7 @@ of information about the corpus we have just created.
     ##  presdebate-2016-02-25  3051  29978      2002
     ## 
     ## Source: http://www.presidency.ucsb.edu/ws/index.php?pid=111634
-    ## Created: Tue Feb 12 13:04:18 2019
+    ## Created: Tue Feb 12 11:06:54 2019
     ## Notes: 10th Republican candidate debate, Houston TX 2016-02-25
 
 Our goal in order to analyze this by speaker, is to redefine the corpus
@@ -149,7 +150,7 @@ extracting the regular expression. match in the text to `pattern`
     ##  presdebate-2016-02-25.10    98    164        10          \nKASICH: 
     ## 
     ## Source: http://www.presidency.ucsb.edu/ws/index.php?pid=111634
-    ## Created: Tue Feb 12 13:04:19 2019
+    ## Created: Tue Feb 12 11:06:54 2019
     ## Notes: corpus_segment.corpus(corp, pattern = "\\s*[[:upper:]]+:\\s+", valuetype = "regex", case_insensitive = FALSE)
 
 Let’s rename `pattern` to something more descriptive, such as `speaker`.
@@ -291,7 +292,7 @@ documents is just five (one for each candidate).
     ##    ... grouping texts
     ##    ... created a 5 x 2,507 sparse dfm
     ##    ... complete. 
-    ## Elapsed time: 0.066 seconds.
+    ## Elapsed time: 0.095 seconds.
 
 Because the texts are of different lengths, we want to normalize them
 (by converting the feature counts into vectors of relative frequencies
@@ -304,11 +305,10 @@ the “glob” formatted wildcard expressions that form the values of the
 RID in our `data_dictionary_RID` object.
 
     dfmatcandRID <- dfm_lookup(dfmatcand, dictionary = data_dictionary_RID)
-    head(dfmatcandRID, nf = 4) %>% 
+
+    head(dfmatcandRID, nf = 4) %>%
+        convert(to = "data.frame") %>% 
         knitr::kable()
-    ## Warning: 'as.data.frame.dfm' is deprecated.
-    ## Use 'convert(x, to = "data.frame")' instead.
-    ## See help("Deprecated")
 
 <table>
 <thead>
