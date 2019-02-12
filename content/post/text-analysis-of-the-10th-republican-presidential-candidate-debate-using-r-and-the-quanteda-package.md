@@ -1,3 +1,6 @@
+Introduction
+------------
+
 A frequent problem in processing texts is the need to segment one or few
 documents into many documents, based on segments that they contain
 marking units that the analyst will want to consider seperately.
@@ -69,7 +72,7 @@ the powerful **stringi** package’s `stri_replace_all_regex()` function.
                                   "\\s*\\[(APPLAUSE|BELL RINGS|BELL RINGING|THE STAR-SPANGLED BANNER|COMMERCIAL BREAK|CROSSTALK|inaudible|LAUGHTER|CHEERING)\\]\\s*", "",
                                   case_insensitive = TRUE)
 
-Now we can see that the tags such as “\[applause\]” are removed.
+Now we can see that the tags such as “`[applause]`” are removed.
 
     tail(txt, 11)[1:3]
     ## [1] "TRUMP: Thank you."                                                                                                                                                                                                                                                                                                                                                                                            
@@ -83,9 +86,8 @@ Let’s now put this into a single document, to create as a **quanteda**
 corpus object for processing and analysis.
 
     library("quanteda", warn.conflicts = FALSE, quietly = TRUE)
-    ## Warning: package 'quanteda' was built under R version 3.5.2
     ## Package version: 1.4.0
-    ## Parallel computing: 2 of 4 threads used.
+    ## Parallel computing: 2 of 12 threads used.
     ## See https://quanteda.io for tutorials and examples.
 
 Because we want this as a single document, we will combine all of the
@@ -111,7 +113,7 @@ of information about the corpus we have just created.
     ##  presdebate-2016-02-25  3051  29978      2002
     ## 
     ## Source: http://www.presidency.ucsb.edu/ws/index.php?pid=111634
-    ## Created: Tue Feb 12 11:06:54 2019
+    ## Created: Wed Feb 13 10:45:12 2019
     ## Notes: 10th Republican candidate debate, Houston TX 2016-02-25
 
 Our goal in order to analyze this by speaker, is to redefine the corpus
@@ -150,7 +152,7 @@ extracting the regular expression. match in the text to `pattern`
     ##  presdebate-2016-02-25.10    98    164        10          \nKASICH: 
     ## 
     ## Source: http://www.presidency.ucsb.edu/ws/index.php?pid=111634
-    ## Created: Tue Feb 12 11:06:54 2019
+    ## Created: Wed Feb 13 10:45:13 2019
     ## Notes: corpus_segment.corpus(corp, pattern = "\\s*[[:upper:]]+:\\s+", valuetype = "regex", case_insensitive = FALSE)
 
 Let’s rename `pattern` to something more descriptive, such as `speaker`.
@@ -292,7 +294,7 @@ documents is just five (one for each candidate).
     ##    ... grouping texts
     ##    ... created a 5 x 2,507 sparse dfm
     ##    ... complete. 
-    ## Elapsed time: 0.095 seconds.
+    ## Elapsed time: 0.072 seconds.
 
 Because the texts are of different lengths, we want to normalize them
 (by converting the feature counts into vectors of relative frequencies
@@ -306,9 +308,11 @@ RID in our `data_dictionary_RID` object.
 
     dfmatcandRID <- dfm_lookup(dfmatcand, dictionary = data_dictionary_RID)
 
-    head(dfmatcandRID, nf = 4) %>%
-        convert(to = "data.frame") %>% 
-        knitr::kable()
+Inspecting this, we see that all tokens have been matched to entries in
+the Regressive Imagery Dictionary, so that the new features are now
+“keys”, or dictionary categories, from the RID.
+
+    head(dfmatcandRID, nf = 4)
 
 <table>
 <thead>
@@ -359,55 +363,61 @@ RID in our `data_dictionary_RID` object.
 </tbody>
 </table>
 
-    knitr::kable(topfeatures(dfmatcandRID, n = 10))
+We can inspect the most common ones using the `topfeatures()` command,
+which here we will multiply by 100 to get slightly easier to interpret
+percentages.
+
+    topfeatures(dfmatcandRID * 100, n = 10) %>%
+        round(2) %>%
+        knitr::kable(col.names = "Percent")
 
 <table>
 <thead>
 <tr class="header">
 <th></th>
-<th style="text-align: right;">x</th>
+<th style="text-align: right;">Percent</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>SECONDARY.ABSTRACT_TOUGHT</td>
-<td style="text-align: right;">0.1451000</td>
+<td style="text-align: right;">14.51</td>
 </tr>
 <tr class="even">
 <td>SECONDARY.SOCIAL_BEHAVIOR</td>
-<td style="text-align: right;">0.1178838</td>
+<td style="text-align: right;">11.79</td>
 </tr>
 <tr class="odd">
 <td>SECONDARY.TEMPORAL_REPERE</td>
-<td style="text-align: right;">0.1120474</td>
+<td style="text-align: right;">11.20</td>
 </tr>
 <tr class="even">
 <td>SECONDARY.INSTRU_BEHAVIOR</td>
-<td style="text-align: right;">0.1033278</td>
+<td style="text-align: right;">10.33</td>
 </tr>
 <tr class="odd">
 <td>PRIMARY.REGR_KNOL.CONCRETENESS</td>
-<td style="text-align: right;">0.0959165</td>
+<td style="text-align: right;">9.59</td>
 </tr>
 <tr class="even">
 <td>SECONDARY.MORAL_IMPERATIVE</td>
-<td style="text-align: right;">0.0372245</td>
+<td style="text-align: right;">3.72</td>
 </tr>
 <tr class="odd">
 <td>EMOTIONS.AGGRESSION</td>
-<td style="text-align: right;">0.0339708</td>
+<td style="text-align: right;">3.40</td>
 </tr>
 <tr class="even">
 <td>PRIMARY.SENSATION.VISION</td>
-<td style="text-align: right;">0.0254299</td>
+<td style="text-align: right;">2.54</td>
 </tr>
 <tr class="odd">
 <td>EMOTIONS.AFFECTION</td>
-<td style="text-align: right;">0.0205163</td>
+<td style="text-align: right;">2.05</td>
 </tr>
 <tr class="even">
 <td>SECONDARY.RESTRAINT</td>
-<td style="text-align: right;">0.0202213</td>
+<td style="text-align: right;">2.02</td>
 </tr>
 </tbody>
 </table>
@@ -440,7 +450,7 @@ type of language.
              xlab = "RID \"Glory\" terms used as a proportion of all terms",
              pch = 19, xlim = c(0, .005))
 
-![](text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-markdown_strict/unnamed-chunk-27-1.png)
+![](text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-markdown_strict/unnamed-chunk-29-1.png)
 
 Comparing one candidate to another
 ----------------------------------
@@ -464,4 +474,4 @@ of this in one set of piped operations.
         textstat_keyness(target = "TRUMP") %>%
         textplot_keyness()
 
-![](text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-markdown_strict/unnamed-chunk-28-1.png)
+![](text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-markdown_strict/unnamed-chunk-30-1.png)
