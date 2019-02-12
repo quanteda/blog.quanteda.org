@@ -1,99 +1,147 @@
 ---
 title: "Text analysis of the 10th Republican Presidential candidate debate using R and the quanteda package"
 author: "Kenneth Benoit and Gokhan Ciflikli"
-date: "2016-02-26"
+date: "2019-02-12"
 tags: ["blog"]
 output: md_document
 ---
 
-```{r setup, include=FALSE, eval = TRUE}
-require(knitr)
-opts_chunk$set(echo = TRUE, tidy = TRUE)
+```{r, echo = FALSE}
+knitr::opts_chunk$set(echo = TRUE, tidy = TRUE, collapse = TRUE)
 ```
 
-On 25 February 2016, the tenth debate among the Republican candidates for the 2016 Presidential election took place in Houston, Texas, moderated by CNN. In this demonstration of the [quanteda](https://github.com/kbenoit/quanteda) package, I will show how to download, import, clean, parse by speaker, and analyze the debate by speaker.
+A frequent problem in processing texts is the need to segment one or few documents into many documents, based on segments that they contain marking units that the analyst will want to consider seperately.
+
+This is a frequent feature of interview or debate **transcripts**, for instance, where a single long source document might contain numerous speech acts from individual speakers.  For analysis, it's likely that we would want to consider these speakers separately, perhaps with the ability to combine their speech acts later by spearker.
+
+Here, we show how this can be done using the [**quanteda** R package](https://quanteda.io), using a debate from the 2016 U.S. presidential election campaign.  This was the tenth debate among the Republican candidates for the 2016 election, and took place in Houston, Texas on 25 February 2016, and was moderated by CNN.  We demonstrate how to download, import, clean, parse by speaker, and analyze the debate by speaker.
+
+### Getting the text into R
 
 The first step involves loading the debate into R.  To read this text, we can use the **rvest** package, which will automatically extract text from the [US Presidency Project website](http://www.presidency.ucsb.edu/ws/index.php?pid=111634).
 
-```{r read in pdf, eval = TRUE}
+```{r}
 library("rvest")
 scraping <- read_html("http://www.presidency.ucsb.edu/ws/index.php?pid=111634")
-transcriptText <- scraping %>%
-                    html_nodes("p") %>%
-                      html_text()
+txt <- scraping %>%
+    html_nodes("p") %>%
+    html_text()
 ```
 
-To get only the text spoken by each candidate, we still need to remove the non-text markers for events such as applause. We can do this using a substitution of the text we wish to remove for the null string "", using `gsub()`.
+We can see what the text looks like by examining the first and last parts of the text.
+```{r}
+head(txt)
+tail(txt, 10)
+```
 
-```{r regex, eval = TRUE}
+### Cleaning the text
+
+To get only the text spoken by each candidate, we still need to remove the non-text markers for events such as applause. We can do this using a substitution of the text we wish to remove for the null string "", using the powerful **stringi** package's `stri_replace_all_regex()` function.  (As an alternative, we could have used `gsub()` or `stringr::str_replace()` but we prefer **stringi**.)   
+```{r}
+library("stringi", verbose = FALSE)
 # removes interjections
-transcriptText <- gsub("\\s*\\[(APPLAUSE|BELL RINGS|BELL RINGING|THE STAR-SPANGLED BANNER|COMMERCIAL BREAK|CROSSTALK|inaudible|LAUGHTER|CHEERING)\\]\\s*", "", ignore.case = TRUE, transcriptText)
+txt <- stri_replace_all_regex(txt, 
+                              "\\s*\\[(APPLAUSE|BELL RINGS|BELL RINGING|THE STAR-SPANGLED BANNER|COMMERCIAL BREAK|CROSSTALK|inaudible|LAUGHTER|CHEERING)\\]\\s*", "",
+                              case_insensitive = TRUE)
 ```
 
-```{r paste3, eval = TRUE}
-cat(paste(substring(transcriptText, 1, 1000), substring(transcriptText, 5001, 5655), collapse = "\n"))
+Now we can see that the tags such as "[applause]" are removed.
+```{r}
+tail(txt, 11)[1:3]
 ```
 
-Now that we have this as one "document", we need to load it into the **quanteda** package for processing and analysis.
+### Creating and segmenting the corpus
 
-```{r paste4, eval = TRUE}
+Let's now put this into a single document, to create as a **quanteda** corpus object for processing and analysis.
+
+```{r}
 require(quanteda, warn.conflicts = FALSE, quietly = TRUE)
 ```
 
-```{r corpus, eval = TRUE}
-transcriptCorpus <- corpus(transcriptText, metacorpus = list(
+Because we want this as a single document, we will combine all of the lines read as separate elements of our character vector `txt` into a single element.  This creates a single "document" from the debate transcript.  (Had we not scraped the document, for instance, it's quite possible that we would have input it as a single document.)
+
+```{r}
+corp <- corpus(paste(txt, collapse = "\n"), metacorpus = list(
   source = "http://www.presidency.ucsb.edu/ws/index.php?pid=111634",
   notes = "10th Republican candidate debate, Houston TX 2016-02-25"))
 ```
 
-```{r corpus summary, eval = TRUE}
-summary(transcriptCorpus)
+We can now use the `summary()` method for a corpus object to see a bit of information about the corpus we have just created.
+```{r}
+summary(corp)
 ```
 
-Our goal in order to analyze this by speaker, is to redefine the corpus as a set of documents defined as a single speech acts, with a document variable identifying the speaker. We accomplish this through the `corpus_segment()` method:
+Our goal in order to analyze this by speaker, is to redefine the corpus as a set of documents defined as a single speech acts, with a document variable identifying the speaker. We accomplish this through the `corpus_segment()` method, using the fact that each speaker is identified by a regular pattern such as "TRUMP:" or "BLITZER:".  These always start on a new line, and the colon (":") is always followed by a space.  We can turn this into a [regular expression](https://www.regular-expressions.info/), and feed it as the `pattern` argument to the function `corpus_segment()`.
+```{r}
+corpseg <- corpus_segment(corp, pattern = "\\s*[[:upper:]]+:\\s+", valuetype = "regex", case_insensitive = FALSE)
+```
+We needed to add `case_insensitive = FALSE` because otherwise, the upper case character class will be overwritten, and we will pick up matches for things like the "now:" in "I'm quoting you now: Let me be...".
 
-```{r segment, eval = TRUE}
-transcriptCorpus <- corpus_segment(transcriptCorpus, pattern = "\\s*[[:upper:]]+:\\s+", valuetype = "regex")
+This converts our single document into a corpus of 538 documents, extracting the regular expression. match in the text to `pattern`
+```{r}
+summary(corpseg, 10)
 ```
 
-```{r corpus summary 2, eval = TRUE}
-summary(transcriptCorpus, 10)
+Let's rename `pattern` to something more descriptive, such as `speaker`.  To do this robustly, we will lookup the position of the names of the docvars and replace it.
+```{r}
+names(docvars(corpseg))[which(names(docvars(corpseg)) == "pattern")] <- "speaker"
 ```
 
-We can clean up the patterns:
 
-```{r clean up tags, eval = TRUE}
-docvars(transcriptCorpus, "pattern") <- stringi::stri_trim_both(docvars(transcriptCorpus, "pattern"))
-docvars(transcriptCorpus, "pattern") <- gsub(":", "", docvars(transcriptCorpus, "pattern"))
-docvars(transcriptCorpus, "pattern") <- gsub("ARRARAS", "ARRASAS", docvars(transcriptCorpus, "pattern"))
+We can clean up the patterns further through some replacements.
+```{r}
+docvars(corpseg, "speaker") <- stri_trim_both(docvars(corpseg, "speaker"))
+docvars(corpseg, "speaker") <- stri_replace_all_fixed(docvars(corpseg, "speaker"), ":", "")
+# a misspelling in the transcript
+docvars(corpseg, "speaker") <- stri_replace_all_fixed(docvars(corpseg, "speaker"), "ARRARAS", "ARRASAS")
 ```
 
-```{r subset, eval = TRUE}
-transcriptCorpus <- corpus_subset(transcriptCorpus, !(pattern %in% c("MALE", "COOPER")))
+Now we can see that the tags are better:
+```{r}
+table(docvars(corpseg, "speaker"))
 ```
 
-```{r corpus summary 3, eval = TRUE}
-summary(transcriptCorpus, 10)
+
+We are only interested in the speakers who are presidential candidates, so let's remove the moderator Wolf Blitzer, the panelists Dana Bash, Maria Celeste Arrarás, and Hugh Hewitt, and the generic tags "Moderator",  "Participants", and "Panelists".
+```{r}
+corpcand <- corpus_subset(corpseg, !(speaker %in% c("ARRARÁS", "BASH", "BLITZER", "HEWITT",
+                                                    "MODERATOR", "PANELISTS", "PARTICIPANTS")))
 ```
 
-```{r table docvars, eval = TRUE}
-table(docvars(transcriptCorpus, "pattern"))
+Now we have only statements from the five Republican candidates in our corpus.
+```{r}
+corpcand
+unique(docvars(corpcand, "speaker"))
 ```
 
-Now we can start to perfom some analysis on the text. Who spoke the most in the debate, in words?
+### Analysis: Who spoke the most?
 
-```{r barplot, eval = TRUE}
+Who spoke the most?  In terms of speech acts, we can tabulate the speakers and plot the number of times each spoke as a barplot.
+```{r}
 par(mar = c(5, 6, .5, 1))
-barplot(sort(ntoken(texts(transcriptCorpus, groups = "pattern"), removePunct = TRUE)), horiz = TRUE, las = 1, xlab = "Total Words Spoken")
+table(docvars(corpcand, "speaker")) %>%
+    sort() %>%
+    barplot(horiz = TRUE, las = 1, xlab = "Total Times Speaking")
 ```
 
-The `ntoken()` function does the work here of counting the tokens in the vector of texts returned by the call to `transcriptCorpus, groups = "pattern"`, which extracts the texts from our segmented corpus and concatenates all texts by speaker. This results in a vector of the same 10 speakers as in our tabulation above. Passing through the `removePunct = TRUE` option in the `ntoken()` call sends this argument through to `tokenize()`, meaning we will not count punctutation characters as tokens. (See `?quanteda::tokenize` for details.)
+We might also be interested, of course, in who spoke the most in words.  We can get the individual words from `ntoken()`.
+```{r}
+par(mar = c(5, 6, .5, 1))
+texts(corpcand, groups = "speaker") %>%
+    ntoken(remove_punct = TRUE) %>%
+    sort() %>%
+    barplot(horiz = TRUE, las = 1, xlab = "Total Words Spoken")
+```
 
-If we wanted to go further, we convert the segmented corpus into a _document-feature matrix_ and apply one of many available psychological dictionaries to analyze the tone of each candidate’s remarks. Here I will demonstrate using the Regressive Imagery Dictionary, from Martindale, C. (1975) _Romantic progression: The psychology of literary history._ Washington, D.C.: Hemisphere. The code below automatically downloads a version of this dictionary in a format prepared for the WordStat software by Provalis, available from http://www.provalisresearch.com/Download/RID.ZIP. **quanteda** can import dictionaries formatted for WordStat, using the `dictionary()` function.
+The `ntoken()` function does the work here of counting the tokens in the vector of texts returned by the call to `texts(corpcand, groups = "speaker")`, which extracts the texts from our segmented corpus and concatenates all texts by speaker. This results in a vector of the same 6 speakers as in our tabulation above. Passing through the `remove_punct = TRUE` option in the `ntoken()` call sends this argument through to `tokens()`, meaning we will not count punctutation characters as tokens.
 
-Here, we will apply the RID dictionary to find out who used what degree of “glory”-oriented language. (You might be able to guess the results already.)
+### Analysis: What were they saying?
 
-```{r dictionary, eval = TRUE}
+If we wanted to go further, we convert the segmented corpus into a _document-feature matrix_ and apply one of many available psychological dictionaries to analyze the tone of each candidate’s remarks. vHere I will demonstrate using the Regressive Imagery Dictionary, from Martindale, C. (1975) _Romantic Progression: The Psychology of Literary History._ Washington, D.C.: Hemisphere. The code below automatically downloads a version of this dictionary in a format prepared for the WordStat software by Provalis, available from http://www.provalisresearch.com/Download/RID.ZIP. **quanteda** can import dictionaries formatted for WordStat, using the `dictionary()` function.
+
+Here, we will apply the RID dictionary to find out who used what degree of "glory"-oriented language. (You might be able to guess the results already.)
+
+```{r}
 # get the RID from the Provalis website
 RIDzipfile <- download.file("http://provalisresearch.com/Download/RID.ZIP", "RID.zip")
 unzip("RID.zip")
@@ -102,49 +150,61 @@ file.remove("RID.zip", "RID.CAT", "RID.exc")
 ```
 
 This is a nested dictionary object with three primary keys:
-```{r dictionary names, eval = TRUE}
+```{r}
 names(data_dictionary_RID)
 ```
 
 We can inspect the category we will use ("Glory") by looking at the last sub-key of the third key, "Emotions".
-```{r dictionary tail, eval = TRUE}
+```{r}
 tail(data_dictionary_RID[["EMOTIONS"]], 1)
 ```
 
 Now we will extract just the candidates, using the `subset()` method for a corpus class object, and then create a document-feature matrix from this corpus, grouping the documents by speaker as we did before.
 
-```{r dfm, eval = TRUE}
-transcriptCorpusCands <- corpus_subset(transcriptCorpus, pattern %in% c("TRUMP", "CRUZ", "RUBIO", "KASICH", "CARSON"))
-canddfm <- dfm(transcriptCorpusCands, groups = "pattern")
+```{r}
+dfmatcand <- dfm(corpcand, groups = "speaker")
 ```
 
 Because the texts are of different lengths, we want to normalize them (by converting the feature counts into vectors of relative frequencies within document):
-
-```{r weight, eval = TRUE}
-canddfmRel <- dfm_weight(canddfm, "prop")
+```{r}
+dfmatcand <- dfm_weight(dfmatcand, "prop")
 ```
 
-Now we are in a position to apply the RID to the dfm, which matches on the “glob” formatted wildcard expressions that form the values of the RID in our `data_dictionary_RID` object.
-
-```{r lookup, eval = TRUE}
-canddfmRelRID <- dfm_lookup(canddfmRel, data_dictionary_RID)
-head(canddfmRelRID)
+Now we are in a position to apply the RID to the dfm, which matches on the "glob" formatted wildcard expressions that form the values of the RID in our `data_dictionary_RID` object.
+```{r}
+dfmatcandRID <- dfm_lookup(dfmatcand, dictionary = data_dictionary_RID)
+head(dfmatcandRID, nf = 4) %>% knitr::kable()
 ```
 
-```{r features, eval = TRUE}
-topfeatures(canddfmRelRID, n = 20)
+```{r}
+knitr::kable(topfeatures(dfmatcandRID, n = 10))
 ```
 
-We could probably spend a whole day analyzing this information, but here, let’s simply compare candidates on their relative use of language in the “Emotions: Glory” category of the RID. We do this by slicing out the feature with this label, converting this to a vector (as there is no ```drop = TRUE``` option for dfm indexing), and then reattaching the document labels to this vector so that it will be named vector. We then send it to the ```dotchart()``` for a simple plot, showing that Trump was by far the highest user of this type of language.
-
-```{r emotions, eval = TRUE}
-canddfmRelRID[, "EMOTIONS.GLORY"]
+We could probably spend a whole day analyzing this information, but here, let's simply compare candidates on their relative use of language in the "Emotions: Glory" category of the RID.  We do this by slicing out the feature with this label.  
+```{r}
+dfmatcandRID[, "EMOTIONS.GLORY"]
 ```
 
-```{r dotchart, eval = TRUE}
-glory <- as.vector(canddfmRelRID[, "EMOTIONS.GLORY"])
-names(glory) <- docnames(canddfmRelRID)
+To make this a vector, we force it using `as.vector()`, as there is no ```drop = TRUE``` option for dfm indexing.  We then reattach the document labels (the candidate names) to this vector as names.  We can then send it to the ```dotchart()``` for a simple plot, showing that Trump was by far the highest user of this type of language.
+```{r}
+glory <- as.vector(dfmatcandRID[, "EMOTIONS.GLORY"])
+names(glory) <- docnames(dfmatcandRID)
 dotchart(sort(glory), xlab = "RID \"Glory\" terms used as a proportion of all terms",
          pch = 19, xlim = c(0, .005))
 ```
+
+### Comparing one candidate to another
+
+Thus far, we have employed some fairly simple plotting functions from the **graphics** package.  We can also draw on some of **quanteda**'s "textplot" functions designed to work directly with its special object classes.  
+
+For instance, we can easily determine which words were used mnost differentially by Trump versus Cruz using some "keyness" statistics and plots.
+```{r}
+dfm(corpcand) %>%
+    dfm_group(groups = "speaker") %>%
+    dfm_subset(speaker %in% c("TRUMP", "CRUZ")) %>%
+    textstat_keyness(target = "TRUMP") %>%
+    textplot_keyness()
+```
+
+
 
