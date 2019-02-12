@@ -16,7 +16,8 @@ Texas on 25 February 2016, and was moderated by CNN. We demonstrate how
 to download, import, clean, parse by speaker, and analyze the debate by
 speaker.
 
-### Getting the text into R
+Getting the text into R
+-----------------------
 
 The first step involves loading the debate into R. To read this text, we
 can use the **rvest** package, which will automatically extract text
@@ -52,7 +53,8 @@ parts of the text.
     ##  [9] "Copyright © The American Presidency ProjectTerms of Service | Privacy | Accessibility"                                                                                                                                                                                                                                                                                                                                   
     ## [10] ""
 
-### Cleaning the text
+Cleaning the text
+-----------------
 
 To get only the text spoken by each candidate, we still need to remove
 the non-text markers for events such as applause. We can do this using a
@@ -74,12 +76,13 @@ Now we can see that the tags such as “\[applause\]” are removed.
     ## [2] "Nobody knows politicians better than I do. They're all talk, they're no action, nothing gets done. I've watched it for years. Take a look at what's happening to our country."                                                                                                                                                                                                                                
     ## [3] "All of the things that I've been talking about, whether it's trade, whether it's building up our depleted military, whether it's taking care of our vets, whether it's getting rid of Common Core, which is a disaster, or knocking out Obamacare and coming up with something so much better, I will get it done. Politicians will never, ever get it done. And we will make America great again. Thank you."
 
-### Creating and segmenting the corpus
+Creating and segmenting the corpus
+----------------------------------
 
 Let’s now put this into a single document, to create as a **quanteda**
 corpus object for processing and analysis.
 
-    require(quanteda, warn.conflicts = FALSE, quietly = TRUE)
+    library("quanteda", warn.conflicts = FALSE, quietly = TRUE)
     ## Package version: 1.4.0
     ## Parallel computing: 2 of 12 threads used.
     ## See https://quanteda.io for tutorials and examples.
@@ -90,9 +93,12 @@ single element. This creates a single “document” from the debate
 transcript. (Had we not scraped the document, for instance, it’s quite
 possible that we would have input it as a single document.)
 
-    corp <- corpus(paste(txt, collapse = "\n"), metacorpus = list(
-      source = "http://www.presidency.ucsb.edu/ws/index.php?pid=111634",
-      notes = "10th Republican candidate debate, Houston TX 2016-02-25"))
+    corp <- corpus(paste(txt, collapse = "\n"), 
+                   docnames = "presdebate-2016-02-25",
+                   metacorpus = list(
+                       source = "http://www.presidency.ucsb.edu/ws/index.php?pid=111634",
+                       notes = "10th Republican candidate debate, Houston TX 2016-02-25")
+                   )
 
 We can now use the `summary()` method for a corpus object to see a bit
 of information about the corpus we have just created.
@@ -100,11 +106,11 @@ of information about the corpus we have just created.
     summary(corp)
     ## Corpus consisting of 1 document:
     ## 
-    ##   Text Types Tokens Sentences
-    ##  text1  3051  29978      2002
+    ##                   Text Types Tokens Sentences
+    ##  presdebate-2016-02-25  3051  29978      2002
     ## 
     ## Source: http://www.presidency.ucsb.edu/ws/index.php?pid=111634
-    ## Created: Tue Feb 12 12:30:19 2019
+    ## Created: Tue Feb 12 12:54:16 2019
     ## Notes: 10th Republican candidate debate, Houston TX 2016-02-25
 
 Our goal in order to analyze this by speaker, is to redefine the corpus
@@ -117,7 +123,8 @@ space. We can turn this into a [regular
 expression](https://www.regular-expressions.info/), and feed it as the
 `pattern` argument to the function `corpus_segment()`.
 
-    corpseg <- corpus_segment(corp, pattern = "\\s*[[:upper:]]+:\\s+", valuetype = "regex", case_insensitive = FALSE)
+    corpseg <- corpus_segment(corp, pattern = "\\s*[[:upper:]]+:\\s+", 
+                              valuetype = "regex", case_insensitive = FALSE)
 
 We needed to add `case_insensitive = FALSE` because otherwise, the upper
 case character class will be overwritten, and we will pick up matches
@@ -129,20 +136,20 @@ extracting the regular expression. match in the text to `pattern`
     summary(corpseg, 10)
     ## Corpus consisting of 533 documents, showing 10 documents:
     ## 
-    ##      Text Types Tokens Sentences             pattern
-    ##   text1.1    18     27         1 \n\nPARTICIPANTS:\n
-    ##   text1.2     7      7         1      \nMODERATOR:\n
-    ##   text1.3    16     21         1        PANELISTS:\n
-    ##   text1.4   165    287        20         \nBLITZER: 
-    ##   text1.5    21     24         1         \nBLITZER: 
-    ##   text1.6    24     28         3         \nBLITZER: 
-    ##   text1.7   114    198        13       \n\nBLITZER: 
-    ##   text1.8    68     92         5          \nCARSON: 
-    ##   text1.9     3      3         1         \nBLITZER: 
-    ##  text1.10    98    164        10          \nKASICH: 
+    ##                      Text Types Tokens Sentences             pattern
+    ##   presdebate-2016-02-25.1    18     27         1 \n\nPARTICIPANTS:\n
+    ##   presdebate-2016-02-25.2     7      7         1      \nMODERATOR:\n
+    ##   presdebate-2016-02-25.3    16     21         1        PANELISTS:\n
+    ##   presdebate-2016-02-25.4   165    287        20         \nBLITZER: 
+    ##   presdebate-2016-02-25.5    21     24         1         \nBLITZER: 
+    ##   presdebate-2016-02-25.6    24     28         3         \nBLITZER: 
+    ##   presdebate-2016-02-25.7   114    198        13       \n\nBLITZER: 
+    ##   presdebate-2016-02-25.8    68     92         5          \nCARSON: 
+    ##   presdebate-2016-02-25.9     3      3         1         \nBLITZER: 
+    ##  presdebate-2016-02-25.10    98    164        10          \nKASICH: 
     ## 
     ## Source: http://www.presidency.ucsb.edu/ws/index.php?pid=111634
-    ## Created: Tue Feb 12 12:30:19 2019
+    ## Created: Tue Feb 12 12:54:17 2019
     ## Notes: corpus_segment.corpus(corp, pattern = "\\s*[[:upper:]]+:\\s+", valuetype = "regex", case_insensitive = FALSE)
 
 Let’s rename `pattern` to something more descriptive, such as `speaker`.
@@ -185,10 +192,15 @@ corpus.
     unique(docvars(corpcand, "speaker"))
     ## [1] "CARSON" "KASICH" "RUBIO"  "CRUZ"   "TRUMP"
 
-### Analysis: Who spoke the most?
+Analysis: Who spoke the most?
+-----------------------------
 
-Who spoke the most? In terms of speech acts, we can tabulate the
-speakers and plot the number of times each spoke as a barplot.
+We can answer this question in two ways: by the greatest number of
+speech acts, created when a candidate spoke, and by the total number of
+words that a candidate spoke in the debate.
+
+To count and compare speech acts, we can tabulate the speech acts and
+plot the speaker frequency as a barplot.
 
     par(mar = c(5, 6, .5, 1))
     table(docvars(corpcand, "speaker")) %>%
@@ -197,8 +209,8 @@ speakers and plot the number of times each spoke as a barplot.
 
 ![](text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-markdown_strict/unnamed-chunk-16-1.png)
 
-We might also be interested, of course, in who spoke the most in words.
-We can get the individual words from `ntoken()`.
+To compare candidates in terms of the total words spoke, we we can get
+the individual words from `ntoken()`.
 
     par(mar = c(5, 6, .5, 1))
     texts(corpcand, groups = "speaker") %>%
@@ -217,35 +229,47 @@ through the `remove_punct = TRUE` option in the `ntoken()` call sends
 this argument through to `tokens()`, meaning we will not count
 punctutation characters as tokens.
 
-### Analysis: What were they saying?
+In both examples, we can see that Trump spoke the most and Carson the
+least.
+
+Analysis: What were they saying?
+--------------------------------
 
 If we wanted to go further, we convert the segmented corpus into a
 *document-feature matrix* and apply one of many available psychological
-dictionaries to analyze the tone of each candidate’s remarks. vHere I
-will demonstrate using the Regressive Imagery Dictionary, from
+dictionaries to analyze the tone of each candidate’s remarks.
+
+Here we demonstrate this using the Regressive Imagery Dictionary, from
 Martindale, C. (1975) *Romantic Progression: The Psychology of Literary
 History.* Washington, D.C.: Hemisphere. The code below automatically
 downloads a version of this dictionary in a format prepared for the
-WordStat software by Provalis, available from
+WordStat software by [Provalis](http://www.provalisresearch.com),
+available from
 <a href="http://www.provalisresearch.com/Download/RID.ZIP" class="uri">http://www.provalisresearch.com/Download/RID.ZIP</a>.
 **quanteda** can import dictionaries formatted for WordStat, using the
-`dictionary()` function.
-
-Here, we will apply the RID dictionary to find out who used what degree
-of “glory”-oriented language. (You might be able to guess the results
-already.)
+`dictionary()` function. We will apply the RID dictionary to find out
+who used what degree of “glory”-oriented language. (You might be able to
+guess the results already.)
 
     # get the RID from the Provalis website
-    RIDzipfile <- download.file("http://provalisresearch.com/Download/RID.ZIP", "RID.zip")
+    download.file("http://provalisresearch.com/Download/RID.ZIP", "RID.zip")
     unzip("RID.zip")
     data_dictionary_RID <- dictionary(file = "RID.CAT", format = "wordstat")
-    file.remove("RID.zip", "RID.CAT", "RID.exc")
-    ## [1] TRUE TRUE TRUE
+    invisible(file.remove("RID.zip", "RID.CAT", "RID.exc"))
 
 This is a nested dictionary object with three primary keys:
 
     names(data_dictionary_RID)
     ## [1] "PRIMARY"   "SECONDARY" "EMOTIONS"
+
+There are additional keys nested inside each of these. We can show the
+number of values for each nested entry for the “EMOTIONS” top-level key.
+
+    lengths(data_dictionary_RID[["EMOTIONS"]])
+    ## POSITIVE_AFFECT         ANXIETY         SADNESS       AFFECTION 
+    ##              70              49              75              65 
+    ##      AGGRESSION  EXPRESSIVE_BEH           GLORY 
+    ##             222              52              76
 
 We can inspect the category we will use (“Glory”) by looking at the last
 sub-key of the third key, “Emotions”.
@@ -255,11 +279,19 @@ sub-key of the third key, “Emotions”.
     ## - [GLORY]:
     ##   - admir*, admirabl*, adventur*, applaud*, applaus*, arroganc*, arrogant*, audacity*, awe*, boast*, boastful*, brillianc*, brilliant*, caesar*, castl*, conque*, crown*, dazzl*, eagl*, elit*, emperor*, empir*, exalt*, exhibit*, exquisit*, extraordinary*, extrem*, fame, famed, famou*, foremost*, geniu*, glor*, gold*, golden*, grandeur*, great*, haughty*, hero*, homag*, illustriou*, kingdom*, magestic*, magnificent*, majestic*, majesty*, nobl*, outstand*, palac*, pomp*, prestig*, prid*, princ*, proud*, renown*, resplendent*, rich*, royal*, royalty*, sceptr*, scorn*, splendid*, splendor*, strut*, sublim*, superior*, superiority*, suprem*, thron*, triump*, victor*, victoriou*, victory*, wealth*, wonder*, wonderful*
 
-Now we will extract just the candidates, using the `subset()` method for
-a corpus class object, and then create a document-feature matrix from
-this corpus, grouping the documents by speaker as we did before.
+Let’s create a document-feature matrix from the candidate corpus,
+grouping the documents by speaker. This takes all of the speech acts and
+combines them by the value of “speaker”, so that the new number of
+documents is just five (one for each candidate).
 
-    dfmatcand <- dfm(corpcand, groups = "speaker")
+    dfmatcand <- dfm(corpcand, groups = "speaker", verbose = TRUE)
+    ## Creating a dfm from a corpus input...
+    ##    ... lowercasing
+    ##    ... found 350 documents, 2,507 features
+    ##    ... grouping texts
+    ##    ... created a 5 x 2,507 sparse dfm
+    ##    ... complete. 
+    ## Elapsed time: 0.073 seconds.
 
 Because the texts are of different lengths, we want to normalize them
 (by converting the feature counts into vectors of relative frequencies
@@ -272,7 +304,8 @@ the “glob” formatted wildcard expressions that form the values of the
 RID in our `data_dictionary_RID` object.
 
     dfmatcandRID <- dfm_lookup(dfmatcand, dictionary = data_dictionary_RID)
-    head(dfmatcandRID, nf = 4) %>% knitr::kable()
+    head(dfmatcandRID, nf = 4) %>% 
+        knitr::kable()
     ## Warning: 'as.data.frame.dfm' is deprecated.
     ## Use 'convert(x, to = "data.frame")' instead.
     ## See help("Deprecated")
@@ -397,18 +430,20 @@ the feature with this label.
 
 To make this a vector, we force it using `as.vector()`, as there is no
 `drop = TRUE` option for dfm indexing. We then reattach the document
-labels (the candidate names) to this vector as names. We can then send
-it to the `dotchart()` for a simple plot, showing that Trump was by far
-the highest user of this type of language.
+labels (the candidate names) to this vector as names. We can plot it
+using a dotplot, showing that Trump was by far the highest user of this
+type of language.
 
     glory <- as.vector(dfmatcandRID[, "EMOTIONS.GLORY"])
     names(glory) <- docnames(dfmatcandRID)
-    dotchart(sort(glory), xlab = "RID \"Glory\" terms used as a proportion of all terms",
+    dotchart(sort(glory), 
+             xlab = "RID \"Glory\" terms used as a proportion of all terms",
              pch = 19, xlim = c(0, .005))
 
-![](text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-markdown_strict/unnamed-chunk-26-1.png)
+![](text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-markdown_strict/unnamed-chunk-27-1.png)
 
-### Comparing one candidate to another
+Comparing one candidate to another
+----------------------------------
 
 Thus far, we have employed some fairly simple plotting functions from
 the **graphics** package. We can also draw on some of **quanteda**’s
@@ -425,4 +460,4 @@ plots.
         textstat_keyness(target = "TRUMP") %>%
         textplot_keyness()
 
-![](text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-markdown_strict/unnamed-chunk-27-1.png)
+![](text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-markdown_strict/unnamed-chunk-28-1.png)
