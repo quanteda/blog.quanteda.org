@@ -211,9 +211,10 @@ dotchart(sort(glory),
 
 Thus far, we have employed some fairly simple plotting functions from the **graphics** package.  We can also draw on some of **quanteda**'s "textplot" functions designed to work directly with its special object classes.  
 
-For instance, we can easily determine which words were used mnost differentially by Trump versus Cruz using some "keyness" statistics and plots.
+For instance, we can easily determine which words were used mnost differentially by Trump versus Cruz using some "keyness" statistics and plots.  Here we recreate the dfm, remove punctuation and English stopwords, group by speaker, subset by just Trump and Cruz, compute keyness statistics, and then plot the keyness statistics.  We can do all of this in one set of piped operations.
 ```{r, fig.height = 8, fig.width = 10}
-dfm(corpcand) %>%
+dfm(corpcand, remove_punct = TRUE) %>%
+    dfm_remove(stopwords("english")) %>%
     dfm_group(groups = "speaker") %>%
     dfm_subset(speaker %in% c("TRUMP", "CRUZ")) %>%
     textstat_keyness(target = "TRUMP") %>%

@@ -110,7 +110,7 @@ of information about the corpus we have just created.
     ##  presdebate-2016-02-25  3051  29978      2002
     ## 
     ## Source: http://www.presidency.ucsb.edu/ws/index.php?pid=111634
-    ## Created: Tue Feb 12 12:59:19 2019
+    ## Created: Tue Feb 12 13:04:18 2019
     ## Notes: 10th Republican candidate debate, Houston TX 2016-02-25
 
 Our goal in order to analyze this by speaker, is to redefine the corpus
@@ -149,7 +149,7 @@ extracting the regular expression. match in the text to `pattern`
     ##  presdebate-2016-02-25.10    98    164        10          \nKASICH: 
     ## 
     ## Source: http://www.presidency.ucsb.edu/ws/index.php?pid=111634
-    ## Created: Tue Feb 12 12:59:19 2019
+    ## Created: Tue Feb 12 13:04:19 2019
     ## Notes: corpus_segment.corpus(corp, pattern = "\\s*[[:upper:]]+:\\s+", valuetype = "regex", case_insensitive = FALSE)
 
 Let’s rename `pattern` to something more descriptive, such as `speaker`.
@@ -291,7 +291,7 @@ documents is just five (one for each candidate).
     ##    ... grouping texts
     ##    ... created a 5 x 2,507 sparse dfm
     ##    ... complete. 
-    ## Elapsed time: 0.084 seconds.
+    ## Elapsed time: 0.066 seconds.
 
 Because the texts are of different lengths, we want to normalize them
 (by converting the feature counts into vectors of relative frequencies
@@ -452,9 +452,13 @@ classes.
 
 For instance, we can easily determine which words were used mnost
 differentially by Trump versus Cruz using some “keyness” statistics and
-plots.
+plots. Here we recreate the dfm, remove punctuation and English
+stopwords, group by speaker, subset by just Trump and Cruz, compute
+keyness statistics, and then plot the keyness statistics. We can do all
+of this in one set of piped operations.
 
-    dfm(corpcand) %>%
+    dfm(corpcand, remove_punct = TRUE) %>%
+        dfm_remove(stopwords("english")) %>%
         dfm_group(groups = "speaker") %>%
         dfm_subset(speaker %in% c("TRUMP", "CRUZ")) %>%
         textstat_keyness(target = "TRUMP") %>%
