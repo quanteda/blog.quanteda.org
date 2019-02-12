@@ -212,7 +212,7 @@ dotchart(sort(glory),
 Thus far, we have employed some fairly simple plotting functions from the **graphics** package.  We can also draw on some of **quanteda**'s "textplot" functions designed to work directly with its special object classes.  
 
 For instance, we can easily determine which words were used mnost differentially by Trump versus Cruz using some "keyness" statistics and plots.
-```{r}
+```{r, fig.height = 8, fig.width = 10}
 dfm(corpcand) %>%
     dfm_group(groups = "speaker") %>%
     dfm_subset(speaker %in% c("TRUMP", "CRUZ")) %>%
