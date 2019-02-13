@@ -47,7 +47,7 @@ txt <- stri_replace_all_regex(txt,
                               case_insensitive = TRUE)
 ```
 
-Now we can see that the tags such as "`[applause]`" are removed.
+Now we can see that the in-text notes such as "`[applause]`" are removed.
 ```{r}
 tail(txt, 11)[1:3]
 ```
@@ -119,6 +119,18 @@ Now we have only statements from the five Republican candidates in our corpus.
 corpcand
 unique(docvars(corpcand, "speaker"))
 ```
+
+Removing the final speaker (Blitzer) also removed some footer text that was picked up as following this tag.
+```{r}
+tail(docvars(corpseg, "speaker"), 1)
+texts(corpseg)[ndoc(corpseg)] %>%
+    cat()
+```
+Because we removed Blitzer above when we created `corpcand`, we don't need to worry about removing the Footer text identifying the source of the document as being the American Presidency Project.
+```{r}
+any(stringi::stri_detect_fixed(texts(corpcand), "American Presidency Project"))
+```
+
 
 ## Analysis: Who spoke the most?
 

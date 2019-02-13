@@ -72,7 +72,8 @@ the powerful **stringi** package’s `stri_replace_all_regex()` function.
                                   "\\s*\\[(APPLAUSE|BELL RINGS|BELL RINGING|THE STAR-SPANGLED BANNER|COMMERCIAL BREAK|CROSSTALK|inaudible|LAUGHTER|CHEERING)\\]\\s*", "",
                                   case_insensitive = TRUE)
 
-Now we can see that the tags such as “`[applause]`” are removed.
+Now we can see that the in-text notes such as “`[applause]`” are
+removed.
 
     tail(txt, 11)[1:3]
     ## [1] "TRUMP: Thank you."                                                                                                                                                                                                                                                                                                                                                                                            
@@ -113,7 +114,7 @@ of information about the corpus we have just created.
     ##  presdebate-2016-02-25  3051  29978      2002
     ## 
     ## Source: http://www.presidency.ucsb.edu/ws/index.php?pid=111634
-    ## Created: Wed Feb 13 10:45:12 2019
+    ## Created: Wed Feb 13 11:00:18 2019
     ## Notes: 10th Republican candidate debate, Houston TX 2016-02-25
 
 Our goal in order to analyze this by speaker, is to redefine the corpus
@@ -152,7 +153,7 @@ extracting the regular expression. match in the text to `pattern`
     ##  presdebate-2016-02-25.10    98    164        10          \nKASICH: 
     ## 
     ## Source: http://www.presidency.ucsb.edu/ws/index.php?pid=111634
-    ## Created: Wed Feb 13 10:45:13 2019
+    ## Created: Wed Feb 13 11:00:19 2019
     ## Notes: corpus_segment.corpus(corp, pattern = "\\s*[[:upper:]]+:\\s+", valuetype = "regex", case_insensitive = FALSE)
 
 Let’s rename `pattern` to something more descriptive, such as `speaker`.
@@ -195,6 +196,28 @@ corpus.
     unique(docvars(corpcand, "speaker"))
     ## [1] "CARSON" "KASICH" "RUBIO"  "CRUZ"   "TRUMP"
 
+Removing the final speaker (Blitzer) also removed some footer text that
+was picked up as following this tag.
+
+    tail(docvars(corpseg, "speaker"), 1)
+    ## [1] "BLITZER"
+    texts(corpseg)[ndoc(corpseg)] %>%
+        cat()
+    ## Mr. Trump, thank you.
+    ## And thanks to each of the candidates, on behalf of everyone here at CNN and Telemundo. We also want to thank the Republican National Committee and the University of Houston. My thanks also to Hugh Hewitt, Maria Celeste, and Dana Bash.
+    ## Super Tuesday is only five days away.
+    ## Presidential Candidate Debates, Republican Candidates Debate in Houston, Texas Online by Gerhard Peters and John T. Woolley, The American Presidency Project https://www.presidency.ucsb.edu/node/312591
+    ## The American Presidency ProjectJohn Woolley and Gerhard PetersContact
+    ## Twitter Facebook
+    ## Copyright © The American Presidency ProjectTerms of Service | Privacy | Accessibility
+
+Because we removed Blitzer above when we created `corpcand`, we don’t
+need to worry about removing the Footer text identifying the source of
+the document as being the American Presidency Project.
+
+    any(stringi::stri_detect_fixed(texts(corpcand), "American Presidency Project"))
+    ## [1] FALSE
+
 Analysis: Who spoke the most?
 -----------------------------
 
@@ -210,7 +233,7 @@ plot the speaker frequency as a barplot.
         sort() %>%
         barplot(horiz = TRUE, las = 1, xlab = "Total Times Speaking")
 
-![](text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-markdown_strict/unnamed-chunk-16-1.png)
+![](text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-markdown_strict/unnamed-chunk-18-1.png)
 
 To compare candidates in terms of the total words spoke, we we can get
 the individual words from `ntoken()`.
@@ -221,7 +244,7 @@ the individual words from `ntoken()`.
         sort() %>%
         barplot(horiz = TRUE, las = 1, xlab = "Total Words Spoken")
 
-![](text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-markdown_strict/unnamed-chunk-17-1.png)
+![](text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-markdown_strict/unnamed-chunk-19-1.png)
 
 The `ntoken()` function does the work here of counting the tokens in the
 vector of texts returned by the call to
@@ -294,7 +317,7 @@ documents is just five (one for each candidate).
     ##    ... grouping texts
     ##    ... created a 5 x 2,507 sparse dfm
     ##    ... complete. 
-    ## Elapsed time: 0.072 seconds.
+    ## Elapsed time: 0.082 seconds.
 
 Because the texts are of different lengths, we want to normalize them
 (by converting the feature counts into vectors of relative frequencies
@@ -450,7 +473,7 @@ type of language.
              xlab = "RID \"Glory\" terms used as a proportion of all terms",
              pch = 19, xlim = c(0, .005))
 
-![](text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-markdown_strict/unnamed-chunk-29-1.png)
+![](text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-markdown_strict/unnamed-chunk-31-1.png)
 
 Comparing one candidate to another
 ----------------------------------
@@ -474,4 +497,4 @@ of this in one set of piped operations.
         textstat_keyness(target = "TRUMP") %>%
         textplot_keyness()
 
-![](text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-markdown_strict/unnamed-chunk-30-1.png)
+![](text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-markdown_strict/unnamed-chunk-32-1.png)
