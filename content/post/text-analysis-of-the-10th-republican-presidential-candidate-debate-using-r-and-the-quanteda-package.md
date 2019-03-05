@@ -87,7 +87,7 @@ Let’s now put this into a single document, to create as a **quanteda**
 corpus object for processing and analysis.
 
     library("quanteda", warn.conflicts = FALSE, quietly = TRUE)
-    ## Package version: 1.4.1
+    ## Package version: 1.4.2
     ## Parallel computing: 2 of 12 threads used.
     ## See https://quanteda.io for tutorials and examples.
 
@@ -114,7 +114,7 @@ of information about the corpus we have just created.
     ##  presdebate-2016-02-25  3051  29978      2002
     ## 
     ## Source: http://www.presidency.ucsb.edu/ws/index.php?pid=111634
-    ## Created: Thu Feb 14 09:34:09 2019
+    ## Created: Tue Mar  5 13:49:05 2019
     ## Notes: 10th Republican candidate debate, Houston TX 2016-02-25
 
 Our goal in order to analyze this by speaker, is to redefine the corpus
@@ -153,7 +153,7 @@ extracting the regular expression. match in the text to `pattern`
     ##  presdebate-2016-02-25.10    98    164        10          \nKASICH: 
     ## 
     ## Source: http://www.presidency.ucsb.edu/ws/index.php?pid=111634
-    ## Created: Thu Feb 14 09:34:10 2019
+    ## Created: Tue Mar  5 13:49:05 2019
     ## Notes: corpus_segment.corpus(corp, pattern = "\\s*[[:upper:]]+:\\s+", valuetype = "regex", case_insensitive = FALSE)
 
 Let’s rename `pattern` to something more descriptive, such as `speaker`.
@@ -317,7 +317,7 @@ documents is just five (one for each candidate).
     ##    ... grouping texts
     ##    ... created a 5 x 2,507 sparse dfm
     ##    ... complete. 
-    ## Elapsed time: 0.079 seconds.
+    ## Elapsed time: 0.071 seconds.
 
 Because the texts are of different lengths, we want to normalize them
 (by converting the feature counts into vectors of relative frequencies
