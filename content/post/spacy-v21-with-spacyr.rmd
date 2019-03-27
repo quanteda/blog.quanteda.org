@@ -1,0 +1,118 @@
+---
+title: "spaCy v2.1 with spacyr"
+author: "Akitaka Matsuo"
+date: '2019-03-26'
+tags: ["blog"]
+blogdown::html_page:
+  highlight: tango
+---
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
+```
+
+A major update of spaCy (v2.1) was [released](https://github.com/explosion/spaCy/releases/tag/v2.1.0) recently. In this post, I will discuss how it works with our [spacyr](https://spacyr.quanteda.io) package along with some tips on having multiple versions of spaCy using conda environments.
+
+## Good news: It works
+
+Our package `spacyr` is an R wrapper for `spaCy`, and to use it, users have to prepare a python environment with `spaCy` installation. This may not be difficult if you are familiar with both R and Python, but that may not be necessarily the case for R-only users. To help such users, we implemented a function called `spacy_install()` which provides a one-step solution.
+
+The gist of what the function does is:
+
+1. Create a new conda environment (with new python executable)
+2. pip-install spacy in the new environment 
+
+The implementation of the function owes a lot to a similar function in `tensorflow` package. If everything works as intended, the installation process is truly one-step. And for Mac and Linux users, it even downloads a miniconda when it does not exist in the system. This seems to be working for most cases. However, as you can see from the [issues](https://github.com/quanteda/spacyr/issues?utf8=%E2%9C%93&q=is%3Aissue) in our github repository, some users have troubles in installing it (see for example [this](https://github.com/quanteda/spacyr/issues/156)). Typically, the issue is caused by not-having c++ compilers, as some operating systems don't have them by default. 
+
+Assuming that you have an old spaCy installed by spacyr, you can try updating to the new spaCy by our other function:
+
+```{r eval = F}
+spacy_upgrade()
+```
+
+In my environment (Mac OS Mojave), it did not work and the installation stopped in the middle (I believe numpy update faiiled). If you experience the same issue, an easy solution would be to delete the current conda environment and re-install:
+
+```{r eval = F}
+spacy_uninstall() 
+spacy_install()
+```
+
+Once I have done it, everything worked fine:
+
+```{r}
+library(spacyr)
+spacy_initialize()
+spacy_parse("hello world")
+```
+
+If you have your original environment (e.g. a custom language model you trained) and do not want to mess up the setup, you can test a new version by creating another environment as described below.
+
+
+## Another good news: Tokenization is fast and you can feel it in spacyr
+
+The tokenization is really fast in spaCy v2.1. That can be seen from spacy_tokenize. The benchmark comparison looks like this:
+
+```{r, echo = F}
+library(microbenchmark)
+tf <- tempfile()
+download.file("https://s3.eu-west-2.amazonaws.com/quanteda-public/rda/bench_res.rda", 
+              destfile = tf)
+load(file = tf)
+bench_res
+```
+
+(Due to the impossiblity of unloading python (see the last section of this post), each benchmark had to be run in a separate R-session and later combined. See my [gist](https://gist.github.com/amatsuo/7f64299310a110bd8158e3c2b262ff0b))
+
+As you see, the difference is massive: The spaCy v2.1 is about **10 times faster** in tokenization called from spacyr.
+
+
+So this is great. However, there is a caveat in this performance gain. **`spacy_tokenize()` is fast under a limited condition.** spaCy by default has [four pipeline components](https://spacy.io/usage/processing-pipelines): `tokenizer`, `tagger`, `parser` and `ner`. In this version v2.1, the tokenizer became really*really fast. So, if you run only the first component of the pipeline (= run `spacy_tokenize()` with all default options), it is really fast. However, if you need to conduct more feature rich tokenization (e.g. `spacy_tokenize(remove_numbers = TRUE)`), the later components of the pipeline have to be run and it might take some time to finish.
+
+```{r}
+data_text_irishbudget2010 <- quanteda::texts(quanteda::data_corpus_irishbudget2010)
+microbenchmark::microbenchmark(
+"remove_numbers=T" = spacy_tokenize(data_text_irishbudget2010, remove_numbers = TRUE),
+"remove_numbers=F" = spacy_tokenize(data_text_irishbudget2010),
+times = 1
+)
+
+```
+
+(I didn't check whether or not this slowdown is caused by our code in either R or Python. We would do more thorough tests in the future.)
+
+## A note on having multiple versions of spaCy in your spacyr
+
+The current setup of `spacy_install()` create a new conda environment isolated from other environments, and thus, if you want to have multiple versions of spaCy, you surely can do that.
+
+One thing to remmber for doing that is **you need to restart R when switching one spaCy to another**. That is because of the difficulty of unloading python environment. In the backend, we use the wonderful **[reticulate](https://github.com/rstudio/reticulate/)** package by Rstudio for seamless integration of R with python. The developer of the package [has made it clear](https://github.com/rstudio/reticulate/issues/27#issuecomment-288728371) that unloading python is technically difficult and reticulate does not support that.^[spacyr has a function called `spacy_finalize()`. This basically deletes all objects created by spaCy in the Python space but does not delete the python space itself.]
+
+Having said that, here is the way to install two versions of spaCy:
+
+```{r eval = FALSE}
+library(spacyr)
+## install the latest version of spaCy (will be installed in "spacy_condaenv")
+spacy_install()
+## install an older version of spaCy (in an enviroment "spacy_old")
+spacy_install(version = "2.0.18", envname = "spacy_old")
+```
+
+To use these environments, you can specify the version when you call `spacy_initialize()`.
+
+```{r eval = FALSE}
+## to use latest
+spacy_initialize(refresh_settings = TRUE)
+## to use the older
+spacy_initialize(condaenv = "spacy_old", refresh_settings = TRUE)
+```
+
+The first line `spacy_initialize(refresh_settings = T)` will use `spacy_condaenv` as that's the first thing spacyr will check when initializing spaCy. spacyr searches possible locations of spaCy installation when `spacy_initialize` is called for the first time (not in this session, but in the entire history). After successfully initializing spacy, spacyr will remember the location of spacyr and use the same setting thereafter. Now that you are switching two environments, you need to have spacyr ignoring the saved setting. `refresh_settings = TRUE` will do the job.
+
+## Summary
+
+In this post, I have discussed a few things on **spacyr** related to the new version **spaCy**. In summary:
+
+1. spaCy v2.1 works with spacyr
+2. spaCy tokenization is much faster in v2.1 than previous
+3. spacyr can help you to set up multiple python environments
+
+
