@@ -1,5 +1,5 @@
 ---
-title: "spaCy v2.1 with spacyr"
+title: "Using spaCy v2.1 with spacyr"
 author: "Akitaka Matsuo"
 date: '2019-03-26'
 tags: ["blog"]
@@ -55,11 +55,11 @@ microbenchmark::microbenchmark(
 )
 ## Unit: milliseconds
 ##                    expr       min        lq      mean    median        uq
-##   remove_numbers = TRUE 5236.1095 5236.1095 5236.1095 5236.1095 5236.1095
-##  remove_numbers = FALSE  323.2002  323.2002  323.2002  323.2002  323.2002
+##   remove_numbers = TRUE 5104.8060 5104.8060 5104.8060 5104.8060 5104.8060
+##  remove_numbers = FALSE  308.1648  308.1648  308.1648  308.1648  308.1648
 ##        max neval
-##  5236.1095     1
-##   323.2002     1</code></pre>
+##  5104.8060     1
+##   308.1648     1</code></pre>
 <p>(I didn’t check whether or not this slowdown is caused by our code in either R or Python. We will test this more thoroughly in the future.)</p>
 </div>
 <div id="a-note-on-having-multiple-versions-of-spacy-in-your-spacyr-installation" class="section level2">

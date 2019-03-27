@@ -1,5 +1,5 @@
 ---
-title: "spaCy v2.1 with spacyr"
+title: "Using spaCy v2.1 with spacyr"
 author: "Akitaka Matsuo"
 date: '2019-03-26'
 tags: ["blog"]
