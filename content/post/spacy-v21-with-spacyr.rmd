@@ -65,7 +65,7 @@ bench_res
 
 As you see, the difference is massive: **spaCy** v2.1 is about **10 (!) times faster** in tokenization called from **spacyr**.
 
-So this is great. However, there is a caveat in this performance gain. **`spacy_tokenize()` is fast under a limited condition.** **spaCy** by default has [four pipeline components](https://spacy.io/usage/processing-pipelines): `tokenizer`, `tagger`, `parser` and `ner`. In version v2.1, the tokenizer became really, really fast. So, if you run only the first component of the pipeline (i.e. run `spacy_tokenize()` with all default options), it is very fast. However, if you need to conduct more feature rich tokenization (e.g. `spacy_tokenize(remove_numbers = TRUE)`), the later components of the pipeline have to be run and it might take some time to finish.
+So this is great. However, there is a caveat in this performance gain. **`spacy_tokenize()` is fast under a limited condition.** **spaCy** by default has [four pipeline components](https://spacy.io/usage/processing-pipelines): `tokenizer`, `tagger`, `parser` and `ner`. In version v2.1, the tokenizer became really, really fast. So, if you run only `tokenizer`, which is the first component of the pipeline (i.e. run `spacy_tokenize()` with all default options), it is very fast. However, if you need to conduct more feature rich tokenization (e.g. `spacy_tokenize(remove_numbers = TRUE)`), the later components of the pipeline have to be run and it might take some time to finish.
 
 ```{r}
 data_text_irishbudget2010 <- quanteda::texts(quanteda::data_corpus_irishbudget2010)
@@ -83,7 +83,7 @@ microbenchmark::microbenchmark(
 
 The current setup of `spacy_install()` create a new conda environment isolated from other environments, and thus, if you want to have multiple versions of **spaCy**, you surely can do that.
 
-One thing to remmber for doing that is **you need to restart R when switching one spaCy to another**. That is because of the difficulty of unloading python environment. In the backend, we use the wonderful [**reticulate**](https://github.com/rstudio/reticulate/) package by RStudio for a seamless integration of R with Python. The developer of the package [has made it clear](https://github.com/rstudio/reticulate/issues/27#issuecomment-288728371) that unloading Python is technically difficult and reticulate does not support that.^[spacyr has a function called `spacy_finalize()`. This function deletes all objects created by **spaCy** in the Python space but does not delete the Python space itself.]
+One thing to remember for doing that is **you need to restart R when switching one spaCy to another**. That is because of the difficulty of unloading python environment. In the backend, we use the wonderful [**reticulate**](https://github.com/rstudio/reticulate/) package by RStudio for seamless integration of R with Python. The developer of the package [has made it clear](https://github.com/rstudio/reticulate/issues/27#issuecomment-288728371) that unloading Python is technically difficult and reticulate does not support that.^[spacyr has a function called `spacy_finalize()`. This function deletes all objects created by **spaCy** in the Python space but does not delete the Python space itself.]
 
 Having said that, here is the way to install two versions of spaCy:
 
