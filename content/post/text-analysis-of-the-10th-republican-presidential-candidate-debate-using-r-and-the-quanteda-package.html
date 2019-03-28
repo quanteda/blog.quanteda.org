@@ -62,7 +62,7 @@ txt &lt;- stri_replace_all_regex(txt,
 <h2>Creating and segmenting the corpus</h2>
 <p>Let’s now put this into a single document, to create as a <strong>quanteda</strong> corpus object for processing and analysis.</p>
 <pre class="r"><code>library(&quot;quanteda&quot;, warn.conflicts = FALSE, quietly = TRUE)
-## Package version: 1.4.2
+## Package version: 1.4.3
 ## Parallel computing: 2 of 12 threads used.
 ## See https://quanteda.io for tutorials and examples.</code></pre>
 <p>Because we want this as a single document, we will combine all of the lines read as separate elements of our character vector <code>txt</code> into a single element. This creates a single “document” from the debate transcript. (Had we not scraped the document, for instance, it’s quite possible that we would have input it as a single document.)</p>
@@ -80,7 +80,7 @@ txt &lt;- stri_replace_all_regex(txt,
 ##  presdebate-2016-02-25  3051  29978      2002
 ## 
 ## Source: http://www.presidency.ucsb.edu/ws/index.php?pid=111634
-## Created: Wed Mar  6 19:25:49 2019
+## Created: Thu Mar 28 10:14:00 2019
 ## Notes: 10th Republican candidate debate, Houston TX 2016-02-25</code></pre>
 <p>Our goal in order to analyze this by speaker, is to redefine the corpus as a set of documents defined as a single speech acts, with a document variable identifying the speaker. We accomplish this through the <code>corpus_segment()</code> method, using the fact that each speaker is identified by a regular pattern such as “TRUMP:” or “BLITZER:”. These always start on a new line, and the colon (“:”) is always followed by a space. We can turn this into a <a href="https://www.regular-expressions.info/">regular expression</a>, and feed it as the <code>pattern</code> argument to the function <code>corpus_segment()</code>.</p>
 <pre class="r"><code>corpseg &lt;- corpus_segment(corp, pattern = &quot;\\s*[[:upper:]]+:\\s+&quot;, 
@@ -103,7 +103,7 @@ txt &lt;- stri_replace_all_regex(txt,
 ##  presdebate-2016-02-25.10    98    164        10          \nKASICH: 
 ## 
 ## Source: http://www.presidency.ucsb.edu/ws/index.php?pid=111634
-## Created: Wed Mar  6 19:25:49 2019
+## Created: Thu Mar 28 10:14:00 2019
 ## Notes: corpus_segment.corpus(corp, pattern = &quot;\\s*[[:upper:]]+:\\s+&quot;, valuetype = &quot;regex&quot;, case_insensitive = FALSE)</code></pre>
 <p>Let’s rename <code>pattern</code> to something more descriptive, such as <code>speaker</code>. To do this robustly, we will lookup the position of the names of the docvars and replace it.</p>
 <pre class="r"><code>names(docvars(corpseg))[which(names(docvars(corpseg)) == &quot;pattern&quot;)] &lt;- &quot;speaker&quot;</code></pre>
@@ -195,7 +195,7 @@ invisible(file.remove(&quot;RID.zip&quot;, &quot;RID.CAT&quot;, &quot;RID.exc&qu
 ##    ... grouping texts
 ##    ... created a 5 x 2,507 sparse dfm
 ##    ... complete. 
-## Elapsed time: 0.07 seconds.</code></pre>
+## Elapsed time: 0.047 seconds.</code></pre>
 <p>Because the texts are of different lengths, we want to normalize them (by converting the feature counts into vectors of relative frequencies within document):</p>
 <pre class="r"><code>dfmatcand &lt;- dfm_weight(dfmatcand, &quot;prop&quot;)</code></pre>
 <p>Now we are in a position to apply the RID to the dfm, which matches on the “glob” formatted wildcard expressions that form the values of the RID in our <code>data_dictionary_RID</code> object.</p>
