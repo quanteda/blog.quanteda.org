@@ -3,8 +3,6 @@ title: "Announcing the quanteda v2 release"
 author: "Kenneth Benoit and Kohei Watanabe"
 date: '2020-02-27'
 tags: ["blog"]
-blogdown::html_page:
-  highlight: tango
 ---
 
 ```{r, echo = FALSE}
