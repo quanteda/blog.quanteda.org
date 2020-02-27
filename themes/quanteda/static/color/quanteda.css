@@ -275,3 +275,11 @@ ul.filter li.active a:hover,.flex-control-nav li a:hover, .flex-control-nav li a
 	color: #467fbf;
 	text-decoration:none;
 }
+
+/* code */
+
+code, kbd, pre, samp{
+    font-family: monospace;
+    font-size: 0.9em;
+}
+
