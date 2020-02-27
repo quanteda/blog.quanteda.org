@@ -2,7 +2,7 @@
 title: "What's new in quanteda v2.0"
 author: "Kenneth Benoit and Kohei Watanabe"
 date: '2020-02-27'
-tags: ["blog"]
+tags: ["blog", "quanteda-latest", "r-bloggers"]
 ---
 
 ```{r, echo = FALSE}
