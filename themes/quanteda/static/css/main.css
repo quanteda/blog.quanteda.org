@@ -13,3 +13,8 @@
   height: 80px;
 }
 
+code, kbd, pre, samp{
+    font-family: monospace;
+    font-size: 0.9em;
+}
+
