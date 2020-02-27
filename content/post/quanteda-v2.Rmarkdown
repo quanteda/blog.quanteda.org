@@ -32,7 +32,7 @@ This means that all functions that operate on character vectors will also operat
 
 #### Document variables
 
-New index operators have been defined for core objects.  The main change here is to redefine the `$` operator for corpus, tokens, and dfm objects (all objects that retain docvars) to allow this operator to access single docvars by name.  Some other index operators have been redefined as well, such as `[.corpus` returning a slice of a corpus, and `[[.corpus` returning the texts from a corpus.
+Following careful consideration, we redesigned some of the index operators for core objects.  The main change here is to redefine the `$` operator for corpus, tokens, and dfm objects (all objects that retain docvars) to allow this operator to access single docvars by name.  Some other index operators have been redefined as well, such as `[.corpus` returning a slice of a corpus, and `[[.corpus` returning the texts from a corpus.
 
 ```{r}
 # view a docvar
@@ -63,7 +63,7 @@ Example:
 ```{r}
 corp <- corpus("This is my one-document corpus.")
 meta(corp) <- list(source = "My blog post.",
-   mymatrix = matrix(1:6, nrow = 2))
+                   mymatrix = matrix(1:6, nrow = 2))
 meta(corp)
 
 meta(corp, type = "system")
@@ -78,17 +78,18 @@ A new method `tokens.list(x, ...)` constructs a `tokens` object from named list 
 
 ```{r}
 txt <- c(doc1 = "I live in the United Kingdom.", 
- doc2 = "Excellent document two.")
+         doc2 = "Excellent document two.")
 tokenizers::tokenize_words(txt) %>%
-tokens()
+    tokens()
 ```
 
 as well as:
 
 ```{r}
+spacyr::spacy_initialize(model = "en_core_web_sm")
 spacyr::spacy_parse(txt) %>%
-spacyr::entity_consolidate() %>%
-as.tokens(include_pos = "pos")
+    spacyr::entity_consolidate() %>%
+    as.tokens(include_pos = "pos")
 ```
 
 All tokens options are now _intervention_ options, to split or remove things that by default are not split or removed.  All `remove_*` options to `tokens()` now remove them from tokens objects by calling `tokens.tokens()`, after constructing the object.  "Pre-processing" is now  actually post-processing using `tokens_*()` methods internally, after a conservative tokenization on token boundaries. This both improves performance and improves consistency in handling special characters (e.g. Twitter characters) across different tokenizer engines.
@@ -115,7 +116,7 @@ print(data_corpus_inaugural, max_ndoc = 1, max_nchar = 20)
 
 print(tokens(data_corpus_inaugural), max_ndoc = 3, max_ntok = 6)
 
-dfm(data_corpus_inaugural)
+print(dfm(data_corpus_inaugural), max_ndoc = 6, max_nfeat = 6)
 ```
 
 The defaults for printing are all user-controllable via `quanteda_options()` as global settings, including whether to print summary information, or whether to print any section of a preview object at all.  For instance:
@@ -145,15 +146,16 @@ This now easily becomes a data.frame for "tidy"ing:
 ```{r}
 # see the top most similar speeches
 as.data.frame(tstat) %>% 
-dplyr::arrange(-cosine)
+    dplyr::arrange(-cosine) %>%
+    head(n = 5)
 ```
 
 Or a list, similar to `tm::findAssocs()`:
 
 ```{r}
 textstat_simil(dfmat, margin = "features", method = "cosine") %>%
-as.list(n = 6) %>%
-head()
+    as.list(n = 6) %>%
+    head(n = 3)
 ```
 
 ### 5. quanteda.textmodel package
@@ -167,14 +169,20 @@ This new package also includes the data objects that are primarily used as examp
 
 ### New features
 
-* We changed the default value of the `size` argument in `dfm_sample()` to the number of features, not the number of documents.
-* We fixed a few CRAN-related issues (compiler warnings on Solaris and encoding warnings on r-devel-linux-x86_64-debian-clang.)
-* Added `startpos` and `endpos` arguments to `tokens_select()`, for selecting on token positions relative to the start or end of the tokens in each document.
+* We added `startpos` and `endpos` arguments to `tokens_select()`, for selecting on token positions relative to the start or end of the tokens in each document.
 * We added a `convert()` method for corpus objects, to convert them into data.frame or json formats.
 * We added a `spacy_tokenize()` method for corpus objects, to provide direct access via the **spacyr** package.
+* A new convenience feature `featfreq()` returns the feature overall frequency for a dfm.
+
+    ```{r}
+    featfreq(dfmat) %>% 
+        sort(decreasing = TRUE) %>% 
+        head(n = 10)
+    ```
 
 ### Behaviour changes
 
+* We changed the default value of the `size` argument in `dfm_sample()` to the number of features, not the number of documents.
 *  The `subset` argument now must be logical, and the `select` argument has been removed.  (This is part of `base::subset()` but has never made sense, either in **quanteda** or **base**.)
 * We added a `force = TRUE` option and error checking for the situations of applying `dfm_weight()` or `dfm_group()` to a dfm that has already been weighted.  The function `textstat_frequency()` now allows passing this argument to `dfm_group()` via `...`.
 * `textstat_frequency()` now has a new argument for resolving ties when ranking term frequencies, defaulting to the "min" method.
@@ -183,7 +191,9 @@ This new package also includes the data objects that are primarily used as examp
 
 ### Bug fixes and stability enhancements
 
+* We fixed a few CRAN-related issues (compiler warnings on Solaris and encoding warnings on r-devel-linux-x86_64-debian-clang.)
+*  We made some fixes to documented `...` objects in two functions that were previously causing CRAN check failures on the release of version 1.5.2.
 *  docnames are now enforced to be character (formerly, could be numeric for some objects).
 *  docnames are now enforced to be strictly unique for all object classes.
 *  Grouping operations in `tokens_group()` and `dfm_group()` are more robust to using multiple grouping variables, and preserve these correctly as docvars in the new dfm.
-*  We made some fixes to documented ... objects in two functions that were previously causing CRAN check failures on the release of version 1.5.2.
+*  All included data objects are upgraded to the new formats.  This includes the corpus objects, the single dfm data object, and the LSD 2015 dictionary object.
