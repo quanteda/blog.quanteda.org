@@ -22,3 +22,11 @@ code {
     font-size: 13px;
 }
 
+header .meta {
+    text-transform: none;
+}
+
+.excerpt, .post-content {
+    line-height: 1.6em;    
+}
+

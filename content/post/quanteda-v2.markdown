@@ -1,5 +1,5 @@
 ---
-title: "What's new in quanteda v2.0"
+title: "What's new in quanteda version 2.0"
 author: "Kenneth Benoit and Kohei Watanabe"
 date: '2020-02-27'
 tags: ["blog", "quanteda-latest", "r-bloggers"]
@@ -7,13 +7,13 @@ tags: ["blog", "quanteda-latest", "r-bloggers"]
 
 
 
-We are proud to announce the version 2 release of the **quanteda** package, following over a year of planning, discussion, design, and -- most significantly -- programming and testing. **quanteda** 2.0 is a major update introducing some major changes and new features detailed below.
+We are proud to announce the version 2.0 release of the **quanteda** package, following over a year of planning, discussion, design, and -- most significantly -- programming and testing. **quanteda** version 2.0 is a major update introducing some major changes and new features detailed below.
 
 ## Major changes
 
 ### 1. Object structure
 
-All included data objects (corpus, tokens, dfm and dictionary) have the new formats. These are all updated to work with the existing extractor and replacement functions.  Your old objects are automatically upgraded to the 2.0 structure by **quanteda**'s functions but you can also do it manually using `as.corpus()`, `as.tokens()`, `as.dfm()` or `as.dictionary()`.
+All included data objects (corpus, tokens, dfm and dictionary) have the new formats. These are all updated to work with the existing extractor and replacement functions.  Your old objects are automatically upgraded to the version 2.0 structure by **quanteda**'s functions but you can also do it manually using `as.corpus()`, `as.tokens()`, `as.dfm()` or `as.dictionary()`.
 
 One of the biggest headaches we faced in making the structural change was that other package authors -- including the (as of today) 20 packages that have strong reverse dependencies on **quanteda** had written functions that bypassed the accessor and replacement functions, despite our explicit plea not to do this in the documentation.  By working with these package authors, however, we were able to correct almost all of this.
 
@@ -111,7 +111,7 @@ meta(corp, type = "system")
 
 ### 2. Tokens constructor
 
-**quanteda** v2 implements major changes to the `tokens()` constructor.  These are designed to simplify the code and its maintenance in **quanteda**, to allow users to work with other (external) tokenizers, and to improve consistency across the tokens processing options.  Changes include:
+**quanteda** version 2.0 implements major changes to the `tokens()` constructor.  These are designed to simplify the code and its maintenance in **quanteda**, to allow users to work with other (external) tokenizers, and to improve consistency across the tokens processing options.  Changes include:
 
 A new method `tokens.list(x, ...)` constructs a `tokens` object from named list of characters, allowing users to tokenize texts using some other function (or package) such as `tokenize_words()`, `tokenize_sentences()`, or `tokenize_tweets()` from the **tokenizers** package, or the list returned by `spacyr::spacy_tokenize()`.  This allows users to use their choice of tokenizer, as long as it returns a named list of characters.  With `tokens.list()`, all tokens processing (`remove_*`) options can be applied, or the list can be converted directly to a `tokens` object without processing using `as.tokens.list()`.  For instance:
 
@@ -163,7 +163,9 @@ While we have made it easier than ever to use any tokenizer you wish, the defaul
 
 New print methods for core objects (corpus, tokens, dfm, dictionary) now exist, each with new global options to control the number of documents shown, as well as the length of a text snippet (corpus), the tokens (tokens), dfm cells (dfm), or keys and values (dictionary).  Similar to the extended printing options for dfm objects, printing of corpus objects now allows for brief summaries of the texts to be printed, and for the number of documents and the length of the previews to be controlled by new global options.
 
-The printing of objects is smarter and provides more user control, but looks better by default.  Examples:
+The printing of objects is smarter and provides more user control, but looks better by default.
+
+Example:
 
 
 ```r
@@ -368,4 +370,4 @@ This new package also includes the data objects that are primarily used as examp
 *  docnames are now enforced to be character (formerly, could be numeric for some objects).
 *  docnames are now enforced to be strictly unique for all object classes.
 *  Grouping operations in `tokens_group()` and `dfm_group()` are more robust to using multiple grouping variables, and preserve these correctly as docvars in the new dfm.
-*  We made some fixes to documented ... objects in two functions that were previously causing CRAN check failures on the release of 1.5.2.
+*  We made some fixes to documented ... objects in two functions that were previously causing CRAN check failures on the release of version 1.5.2.

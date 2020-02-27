@@ -82,12 +82,12 @@ microbenchmark::microbenchmark(
     times = 1
 )
 ## Unit: milliseconds
-##                    expr        min         lq       mean     median         uq
-##   remove_numbers = TRUE 10076.9880 10076.9880 10076.9880 10076.9880 10076.9880
-##  remove_numbers = FALSE   449.1027   449.1027   449.1027   449.1027   449.1027
-##         max neval
-##  10076.9880     1
-##    449.1027     1
+##                    expr       min        lq      mean    median        uq
+##   remove_numbers = TRUE 8330.6922 8330.6922 8330.6922 8330.6922 8330.6922
+##  remove_numbers = FALSE  960.9906  960.9906  960.9906  960.9906  960.9906
+##        max neval
+##  8330.6922     1
+##   960.9906     1
 ```
 
 (I didn't check whether or not this slowdown is caused by our code in either R or Python.  We will test this more thoroughly in the future.)
