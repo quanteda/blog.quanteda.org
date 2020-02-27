@@ -2,7 +2,7 @@
 title: "Text analysis of the 10th Republican Presidential candidate debate"
 author: "Kenneth Benoit and Gokhan Ciflikli"
 date: "2019-02-12"
-tags: ["blog"]
+tags: ["blog", "r-bloggers"]
 ---
 
 

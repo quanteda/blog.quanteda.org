@@ -2,7 +2,7 @@
 title: "Using spaCy v2.1 with spacyr"
 author: "Akitaka Matsuo"
 date: '2019-03-28'
-tags: ["blog"]
+tags: ["blog", "spacyr"]
 ---
 
 
@@ -81,13 +81,13 @@ microbenchmark::microbenchmark(
     "remove_numbers = FALSE" = spacy_tokenize(data_text_irishbudget2010),
     times = 1
 )
-## Unit: seconds
-##                    expr      min       lq     mean   median       uq      max
-##   remove_numbers = TRUE 8.898238 8.898238 8.898238 8.898238 8.898238 8.898238
-##  remove_numbers = FALSE 1.037341 1.037341 1.037341 1.037341 1.037341 1.037341
-##  neval
-##      1
-##      1
+## Unit: milliseconds
+##                    expr        min         lq       mean     median         uq
+##   remove_numbers = TRUE 10076.9880 10076.9880 10076.9880 10076.9880 10076.9880
+##  remove_numbers = FALSE   449.1027   449.1027   449.1027   449.1027   449.1027
+##         max neval
+##  10076.9880     1
+##    449.1027     1
 ```
 
 (I didn't check whether or not this slowdown is caused by our code in either R or Python.  We will test this more thoroughly in the future.)
