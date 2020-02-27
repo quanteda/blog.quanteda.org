@@ -1,5 +1,5 @@
 ---
-title: "Text analysis of the 10th Republican Presidential candidate debate using R and the quanteda package"
+title: "Text analysis of the 10th Republican Presidential candidate debate"
 author: "Kenneth Benoit and Gokhan Ciflikli"
 date: "2019-02-12"
 tags: ["blog"]
@@ -46,7 +46,7 @@ tail(txt, 10)
 </div>
 <div id="cleaning-the-text" class="section level2">
 <h2>Cleaning the text</h2>
-<p>To get only the text spoken by each candidate, we still need to remove the non-text markers for events such as applause. We can do this using a substitution of the text we wish to remove for the null string "", using the powerful <strong>stringi</strong> package’s <code>stri_replace_all_regex()</code> function. (As an alternative, we could have used <code>gsub()</code> or <code>stringr::str_replace()</code> but we prefer <strong>stringi</strong>.)</p>
+<p>To get only the text spoken by each candidate, we still need to remove the non-text markers for events such as applause. We can do this using a substitution of the text we wish to remove for the null string &quot;&quot;, using the powerful <strong>stringi</strong> package’s <code>stri_replace_all_regex()</code> function. (As an alternative, we could have used <code>gsub()</code> or <code>stringr::str_replace()</code> but we prefer <strong>stringi</strong>.)</p>
 <pre class="r"><code>library(&quot;stringi&quot;, verbose = FALSE)
 # removes interjections
 txt &lt;- stri_replace_all_regex(txt, 
@@ -62,8 +62,8 @@ txt &lt;- stri_replace_all_regex(txt,
 <h2>Creating and segmenting the corpus</h2>
 <p>Let’s now put this into a single document, to create as a <strong>quanteda</strong> corpus object for processing and analysis.</p>
 <pre class="r"><code>library(&quot;quanteda&quot;, warn.conflicts = FALSE, quietly = TRUE)
-## Package version: 1.4.3
-## Parallel computing: 2 of 12 threads used.
+## Package version: 2.0.0
+## Parallel computing: 2 of 6 threads used.
 ## See https://quanteda.io for tutorials and examples.</code></pre>
 <p>Because we want this as a single document, we will combine all of the lines read as separate elements of our character vector <code>txt</code> into a single element. This creates a single “document” from the debate transcript. (Had we not scraped the document, for instance, it’s quite possible that we would have input it as a single document.)</p>
 <pre class="r"><code>corp &lt;- corpus(paste(txt, collapse = &quot;\n&quot;), 
@@ -71,17 +71,14 @@ txt &lt;- stri_replace_all_regex(txt,
                metacorpus = list(
                    source = &quot;http://www.presidency.ucsb.edu/ws/index.php?pid=111634&quot;,
                    notes = &quot;10th Republican candidate debate, Houston TX 2016-02-25&quot;)
-               )</code></pre>
+               )
+## Warning: metacorpus argument is not used.</code></pre>
 <p>We can now use the <code>summary()</code> method for a corpus object to see a bit of information about the corpus we have just created.</p>
 <pre class="r"><code>summary(corp)
-## Corpus consisting of 1 document:
+## Corpus consisting of 1 document, showing 1 document:
 ## 
 ##                   Text Types Tokens Sentences
-##  presdebate-2016-02-25  3051  29978      2002
-## 
-## Source: http://www.presidency.ucsb.edu/ws/index.php?pid=111634
-## Created: Thu Mar 28 10:14:00 2019
-## Notes: 10th Republican candidate debate, Houston TX 2016-02-25</code></pre>
+##  presdebate-2016-02-25  3051  29962      2002</code></pre>
 <p>Our goal in order to analyze this by speaker, is to redefine the corpus as a set of documents defined as a single speech acts, with a document variable identifying the speaker. We accomplish this through the <code>corpus_segment()</code> method, using the fact that each speaker is identified by a regular pattern such as “TRUMP:” or “BLITZER:”. These always start on a new line, and the colon (“:”) is always followed by a space. We can turn this into a <a href="https://www.regular-expressions.info/">regular expression</a>, and feed it as the <code>pattern</code> argument to the function <code>corpus_segment()</code>.</p>
 <pre class="r"><code>corpseg &lt;- corpus_segment(corp, pattern = &quot;\\s*[[:upper:]]+:\\s+&quot;, 
                           valuetype = &quot;regex&quot;, case_insensitive = FALSE)</code></pre>
@@ -100,11 +97,7 @@ txt &lt;- stri_replace_all_regex(txt,
 ##   presdebate-2016-02-25.7   114    198        13       \n\nBLITZER: 
 ##   presdebate-2016-02-25.8    68     92         5          \nCARSON: 
 ##   presdebate-2016-02-25.9     3      3         1         \nBLITZER: 
-##  presdebate-2016-02-25.10    98    164        10          \nKASICH: 
-## 
-## Source: http://www.presidency.ucsb.edu/ws/index.php?pid=111634
-## Created: Thu Mar 28 10:14:00 2019
-## Notes: corpus_segment.corpus(corp, pattern = &quot;\\s*[[:upper:]]+:\\s+&quot;, valuetype = &quot;regex&quot;, case_insensitive = FALSE)</code></pre>
+##  presdebate-2016-02-25.10    98    164        10          \nKASICH:</code></pre>
 <p>Let’s rename <code>pattern</code> to something more descriptive, such as <code>speaker</code>. To do this robustly, we will lookup the position of the names of the docvars and replace it.</p>
 <pre class="r"><code>names(docvars(corpseg))[which(names(docvars(corpseg)) == &quot;pattern&quot;)] &lt;- &quot;speaker&quot;</code></pre>
 <p>We can clean up the patterns further through some replacements.</p>
@@ -115,18 +108,35 @@ docvars(corpseg, &quot;speaker&quot;) &lt;- stri_replace_all_fixed(docvars(corps
 <p>Now we can see that the tags are better:</p>
 <pre class="r"><code>table(docvars(corpseg, &quot;speaker&quot;))
 ## 
-##      ARRARÁS         BASH      BLITZER       CARSON         CRUZ 
-##           25           28          103           14           67 
-##       HEWITT       KASICH    MODERATOR    PANELISTS PARTICIPANTS 
-##           24           25            1            1            1 
-##        RUBIO        TRUMP 
-##           92          152</code></pre>
+##      ARRARÁS         BASH      BLITZER       CARSON         CRUZ       HEWITT 
+##           25           28          103           14           67           24 
+##       KASICH    MODERATOR    PANELISTS PARTICIPANTS        RUBIO        TRUMP 
+##           25            1            1            1           92          152</code></pre>
 <p>We are only interested in the speakers who are presidential candidates, so let’s remove the moderator Wolf Blitzer, the panelists Dana Bash, Maria Celeste Arrarás, and Hugh Hewitt, and the generic tags “Moderator”, “Participants”, and “Panelists”.</p>
 <pre class="r"><code>corpcand &lt;- corpus_subset(corpseg, !(speaker %in% c(&quot;ARRARÁS&quot;, &quot;BASH&quot;, &quot;BLITZER&quot;, &quot;HEWITT&quot;,
                                                     &quot;MODERATOR&quot;, &quot;PANELISTS&quot;, &quot;PARTICIPANTS&quot;)))</code></pre>
 <p>Now we have only statements from the five Republican candidates in our corpus.</p>
 <pre class="r"><code>corpcand
 ## Corpus consisting of 350 documents and 1 docvar.
+## presdebate-2016-02-25.8 :
+## &quot;If someone had tried to describe today&#39;s America to you 30 y...&quot;
+## 
+## presdebate-2016-02-25.10 :
+## &quot;Well, you know, on the way over here, even getting ready ear...&quot;
+## 
+## presdebate-2016-02-25.12 :
+## &quot;Well, thank you. This election, we have to decide the identi...&quot;
+## 
+## presdebate-2016-02-25.14 :
+## &quot;Welcome to Texas. Here, Texas provided my family with hope. ...&quot;
+## 
+## presdebate-2016-02-25.16 :
+## &quot;Thank you. My whole theme is make America great again. We do...&quot;
+## 
+## presdebate-2016-02-25.18 :
+## &quot;First of all, he was in charge of amnesty, he was the leader...&quot;
+## 
+## [ reached max_ndoc ... 344 more documents ]
 unique(docvars(corpcand, &quot;speaker&quot;))
 ## [1] &quot;CARSON&quot; &quot;KASICH&quot; &quot;RUBIO&quot;  &quot;CRUZ&quot;   &quot;TRUMP&quot;</code></pre>
 <p>Removing the final speaker (Blitzer) also removed some footer text that was picked up as following this tag.</p>
@@ -153,15 +163,15 @@ texts(corpseg)[ndoc(corpseg)] %&gt;%
 table(docvars(corpcand, &quot;speaker&quot;)) %&gt;%
     sort() %&gt;%
     barplot(horiz = TRUE, las = 1, xlab = &quot;Total Times Speaking&quot;)</code></pre>
-<p><img src="/post/text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<p><img src="/post/text-analysis-of-the-10th-republican-presidential-candidate-debate_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
 <p>To compare candidates in terms of the total words spoke, we we can get the individual words from <code>ntoken()</code>.</p>
 <pre class="r"><code>par(mar = c(5, 6, .5, 1))
 texts(corpcand, groups = &quot;speaker&quot;) %&gt;%
     ntoken(remove_punct = TRUE) %&gt;%
     sort() %&gt;%
     barplot(horiz = TRUE, las = 1, xlab = &quot;Total Words Spoken&quot;)</code></pre>
-<p><img src="/post/text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
-<p>The <code>ntoken()</code> function does the work here of counting the tokens in the vector of texts returned by the call to <code>texts(corpcand, groups = "speaker")</code>, which extracts the texts from our segmented corpus and concatenates all texts by speaker. This results in a vector of the same 6 speakers as in our tabulation above. Passing through the <code>remove_punct = TRUE</code> option in the <code>ntoken()</code> call sends this argument through to <code>tokens()</code>, meaning we will not count punctutation characters as tokens.</p>
+<p><img src="/post/text-analysis-of-the-10th-republican-presidential-candidate-debate_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+<p>The <code>ntoken()</code> function does the work here of counting the tokens in the vector of texts returned by the call to <code>texts(corpcand, groups = &quot;speaker&quot;)</code>, which extracts the texts from our segmented corpus and concatenates all texts by speaker. This results in a vector of the same 6 speakers as in our tabulation above. Passing through the <code>remove_punct = TRUE</code> option in the <code>ntoken()</code> call sends this argument through to <code>tokens()</code>, meaning we will not count punctutation characters as tokens.</p>
 <p>In both examples, we can see that Trump spoke the most and Carson the least.</p>
 </div>
 <div id="analysis-what-were-they-saying" class="section level2">
@@ -178,24 +188,21 @@ invisible(file.remove(&quot;RID.zip&quot;, &quot;RID.CAT&quot;, &quot;RID.exc&qu
 ## [1] &quot;PRIMARY&quot;   &quot;SECONDARY&quot; &quot;EMOTIONS&quot;</code></pre>
 <p>There are additional keys nested inside each of these. We can show the number of values for each nested entry for the “EMOTIONS” top-level key.</p>
 <pre class="r"><code>lengths(data_dictionary_RID[[&quot;EMOTIONS&quot;]])
-## POSITIVE_AFFECT         ANXIETY         SADNESS       AFFECTION 
-##              70              49              75              65 
-##      AGGRESSION  EXPRESSIVE_BEH           GLORY 
-##             222              52              76</code></pre>
+## POSITIVE_AFFECT         ANXIETY         SADNESS       AFFECTION      AGGRESSION 
+##              70              49              75              65             222 
+##  EXPRESSIVE_BEH           GLORY 
+##              52              76</code></pre>
 <p>We can inspect the category we will use (“Glory”) by looking at the last sub-key of the third key, “Emotions”.</p>
 <pre class="r"><code>tail(data_dictionary_RID[[&quot;EMOTIONS&quot;]], 1)
 ## Dictionary object with 1 key entry.
 ## - [GLORY]:
-##   - admir*, admirabl*, adventur*, applaud*, applaus*, arroganc*, arrogant*, audacity*, awe*, boast*, boastful*, brillianc*, brilliant*, caesar*, castl*, conque*, crown*, dazzl*, eagl*, elit*, emperor*, empir*, exalt*, exhibit*, exquisit*, extraordinary*, extrem*, fame, famed, famou*, foremost*, geniu*, glor*, gold*, golden*, grandeur*, great*, haughty*, hero*, homag*, illustriou*, kingdom*, magestic*, magnificent*, majestic*, majesty*, nobl*, outstand*, palac*, pomp*, prestig*, prid*, princ*, proud*, renown*, resplendent*, rich*, royal*, royalty*, sceptr*, scorn*, splendid*, splendor*, strut*, sublim*, superior*, superiority*, suprem*, thron*, triump*, victor*, victoriou*, victory*, wealth*, wonder*, wonderful*</code></pre>
+##   - admir*, admirabl*, adventur*, applaud*, applaus*, arroganc*, arrogant*, audacity*, awe*, boast*, boastful*, brillianc*, brilliant*, caesar*, castl*, conque*, crown*, dazzl*, eagl*, elit* [ ... and 56 more ]</code></pre>
 <p>Let’s create a document-feature matrix from the candidate corpus, grouping the documents by speaker. This takes all of the speech acts and combines them by the value of “speaker”, so that the new number of documents is just five (one for each candidate).</p>
 <pre class="r"><code>dfmatcand &lt;- dfm(corpcand, groups = &quot;speaker&quot;, verbose = TRUE)
 ## Creating a dfm from a corpus input...
 ##    ... lowercasing
-##    ... found 350 documents, 2,507 features
-##    ... grouping texts
-##    ... created a 5 x 2,507 sparse dfm
-##    ... complete. 
-## Elapsed time: 0.047 seconds.</code></pre>
+##    ... found 350 documents, 2,510 features
+##    ... grouping texts</code></pre>
 <p>Because the texts are of different lengths, we want to normalize them (by converting the feature counts into vectors of relative frequencies within document):</p>
 <pre class="r"><code>dfmatcand &lt;- dfm_weight(dfmatcand, &quot;prop&quot;)</code></pre>
 <p>Now we are in a position to apply the RID to the dfm, which matches on the “glob” formatted wildcard expressions that form the values of the RID in our <code>data_dictionary_RID</code> object.</p>
@@ -222,10 +229,10 @@ invisible(file.remove(&quot;RID.zip&quot;, &quot;RID.CAT&quot;, &quot;RID.exc&qu
 </tr>
 <tr class="even">
 <td align="left">CRUZ</td>
-<td align="right">0.0012469</td>
+<td align="right">0.0012471</td>
 <td align="right">0.0000000</td>
 <td align="right">0</td>
-<td align="right">0.0004156</td>
+<td align="right">0.0004157</td>
 </tr>
 <tr class="odd">
 <td align="left">KASICH</td>
@@ -236,17 +243,17 @@ invisible(file.remove(&quot;RID.zip&quot;, &quot;RID.CAT&quot;, &quot;RID.exc&qu
 </tr>
 <tr class="even">
 <td align="left">RUBIO</td>
-<td align="right">0.0019881</td>
+<td align="right">0.0019897</td>
 <td align="right">0.0000000</td>
 <td align="right">0</td>
 <td align="right">0.0000000</td>
 </tr>
 <tr class="odd">
 <td align="left">TRUMP</td>
-<td align="right">0.0007627</td>
+<td align="right">0.0007628</td>
 <td align="right">0.0006356</td>
 <td align="right">0</td>
-<td align="right">0.0003813</td>
+<td align="right">0.0003814</td>
 </tr>
 </tbody>
 </table>
@@ -272,11 +279,11 @@ invisible(file.remove(&quot;RID.zip&quot;, &quot;RID.CAT&quot;, &quot;RID.exc&qu
 </tr>
 <tr class="odd">
 <td>SECONDARY.TEMPORAL_REPERE</td>
-<td align="right">11.20</td>
+<td align="right">11.21</td>
 </tr>
 <tr class="even">
 <td>SECONDARY.INSTRU_BEHAVIOR</td>
-<td align="right">10.33</td>
+<td align="right">10.34</td>
 </tr>
 <tr class="odd">
 <td>PRIMARY.REGR_KNOL.CONCRETENESS</td>
@@ -306,22 +313,21 @@ invisible(file.remove(&quot;RID.zip&quot;, &quot;RID.CAT&quot;, &quot;RID.exc&qu
 </table>
 <p>We could probably spend a whole day analyzing this information, but here, let’s simply compare candidates on their relative use of language in the “Emotions: Glory” category of the RID. We do this by slicing out the feature with this label.</p>
 <pre class="r"><code>dfmatcandRID[, &quot;EMOTIONS.GLORY&quot;]
-## Document-feature matrix of: 5 documents, 1 feature (0.0% sparse).
-## 5 x 1 sparse Matrix of class &quot;dfm&quot;
+## Document-feature matrix of: 5 documents, 1 feature (0.0% sparse) and 1 docvar.
 ##         features
 ## docs     EMOTIONS.GLORY
 ##   CARSON   0.0009718173
-##   CRUZ     0.0027015794
+##   CRUZ     0.0027021409
 ##   KASICH   0.0016973812
-##   RUBIO    0.0019880716
-##   TRUMP    0.0045760773</code></pre>
+##   RUBIO    0.0019896538
+##   TRUMP    0.0045766590</code></pre>
 <p>To make this a vector, we force it using <code>as.vector()</code>, as there is no <code>drop = TRUE</code> option for dfm indexing. We then reattach the document labels (the candidate names) to this vector as names. We can plot it using a dotplot, showing that Trump was by far the highest user of this type of language.</p>
 <pre class="r"><code>glory &lt;- as.vector(dfmatcandRID[, &quot;EMOTIONS.GLORY&quot;])
 names(glory) &lt;- docnames(dfmatcandRID)
 dotchart(sort(glory), 
          xlab = &quot;RID \&quot;Glory\&quot; terms used as a proportion of all terms&quot;,
          pch = 19, xlim = c(0, .005))</code></pre>
-<p><img src="/post/text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-html/unnamed-chunk-31-1.png" width="672" /></p>
+<p><img src="/post/text-analysis-of-the-10th-republican-presidential-candidate-debate_files/figure-html/unnamed-chunk-31-1.png" width="672" /></p>
 </div>
 <div id="comparing-one-candidate-to-another" class="section level2">
 <h2>Comparing one candidate to another</h2>
@@ -333,5 +339,5 @@ dotchart(sort(glory),
     dfm_subset(speaker %in% c(&quot;TRUMP&quot;, &quot;CRUZ&quot;)) %&gt;%
     textstat_keyness(target = &quot;TRUMP&quot;) %&gt;%
     textplot_keyness()</code></pre>
-<p><img src="/post/text-analysis-of-the-10th-republican-presidential-candidate-debate-using-r-and-the-quanteda-package_files/figure-html/unnamed-chunk-32-1.png" width="960" /></p>
+<p><img src="/post/text-analysis-of-the-10th-republican-presidential-candidate-debate_files/figure-html/unnamed-chunk-32-1.png" width="960" /></p>
 </div>

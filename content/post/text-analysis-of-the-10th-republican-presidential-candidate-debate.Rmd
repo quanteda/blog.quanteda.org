@@ -1,5 +1,5 @@
 ---
-title: "Text analysis of the 10th Republican Presidential candidate debate using R and the quanteda package"
+title: "Text analysis of the 10th Republican Presidential candidate debate"
 author: "Kenneth Benoit and Gokhan Ciflikli"
 date: "2019-02-12"
 tags: ["blog"]
