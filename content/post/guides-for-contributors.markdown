@@ -18,7 +18,7 @@ To serve this goal, we would like to ask those who have a say on NLP to get invo
 
 ## How to contribute
 
-This blog is served by [blogdown](https://bookdown.org/yihui/blogdown/), and all contents are generated from [markdown](#) files. For our contributors, we would like to ask you to prepare an `markdown` or `Rmarkdown` file  (regarding the difference between `md` and `rmd`, please refer [here](https://bookdown.org/yihui/blogdown/output-format.html)).
+This blog is served by [blogdown](https://bookdown.org/yihui/blogdown/), and all contents are generated from [markdown](#) files. For our contributors, we would like to ask you to prepare an `markdown` or `Rmarkdown` file  (regarding the difference between `markdown` and `Rmarkdown`, please refer [here](https://bookdown.org/yihui/blogdown/output-format.html)).
 
 ### Markdown syntax
 
