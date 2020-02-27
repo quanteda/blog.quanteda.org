@@ -19,12 +19,14 @@ Following over a year of planning, discusion, design, and -- most significantly 
 
 1.  New corpus object structure.  
 
-    The internals of the corpus object have been redesigned, and now are based around a character vector with meta- and system-data in attributes.  These are all updated to work with the existing extractor and replacement functions.  If you were using these before, then you should not even notice the change.  Docvars are now handled separately from the texts, in the same way that  docvars are handled for tokens objects.
+    The internals of the corpus object have been redesigned, and now are based around a character vector with meta- and system-data in attributes.  Docvars are now handled separately from the texts, in the same way that docvars are handled for tokens objects.
     
     ```{r}
     library(quanteda, warn.conflicts = FALSE)
     is.character(data_corpus_inaugural)
     ```
+    
+    These are all updated to work with the existing extractor and replacement functions.  Your old corpus ojbects are automatically upgraded to the 2.0 structure by **quanteda**'s functions but you can also do it manually using `as.corpus()`. 
     
     This means that all functions that operate on character vectors will also operate on a corpus, although it might be necessary to drop the special attributes using `as.character()`.  This is how `spacyr::spacy_parse()` for instance now works with a **quanteda** corpus, by using the fact that it's just a souped-up, specially classed character vector.
     
@@ -117,6 +119,7 @@ Following over a year of planning, discusion, design, and -- most significantly 
     ```
     
     The defaults for printing are all user-controllable via `quanteda_options()` as global settings, including whether to print summary information, or whether to print any section of a preview object at all.  For instance:
+    
     ```{r}
     quanteda_options(print_tokens_max_ndoc = 0)
     tokens(data_corpus_inaugural)

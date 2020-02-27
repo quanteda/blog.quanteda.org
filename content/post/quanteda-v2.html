@@ -1,0 +1,303 @@
+---
+title: "Announcing the quanteda v2 release"
+author: "Kenneth Benoit and Kohei Watanabe"
+date: '2020-02-27'
+tags: ["blog"]
+blogdown::html_page:
+  highlight: tango
+---
+
+
+
+<p>Following over a year of planning, discusion, design, and – most significantly – programming and testing, we are proud to announce the version 2 release of the <strong>quanteda</strong> package.</p>
+<p><strong>quanteda</strong> 2.0 is a major update introducing some major changes and new features, detailed here.</p>
+<div id="whats-new-in-v2.0" class="section level2">
+<h2>What’s new in v2.0</h2>
+<ol style="list-style-type: decimal">
+<li><p>New corpus object structure.</p>
+<p>The internals of the corpus object have been redesigned, and now are based around a character vector with meta- and system-data in attributes. Docvars are now handled separately from the texts, in the same way that docvars are handled for tokens objects.</p>
+<pre class="r"><code>library(quanteda, warn.conflicts = FALSE)
+## Package version: 2.0.0
+## Parallel computing: 2 of 6 threads used.
+## See https://quanteda.io for tutorials and examples.
+is.character(data_corpus_inaugural)
+## [1] TRUE</code></pre>
+<p>These are all updated to work with the existing extractor and replacement functions. Your old corpus ojbects are automatically upgraded to the 2.0 structure by <strong>quanteda</strong>’s functions but you can also do it manually using <code>as.corpus()</code>.</p>
+<p>This means that all functions that operate on character vectors will also operate on a corpus, although it might be necessary to drop the special attributes using <code>as.character()</code>. This is how <code>spacyr::spacy_parse()</code> for instance now works with a <strong>quanteda</strong> corpus, by using the fact that it’s just a souped-up, specially classed character vector.</p>
+<p>One of the biggest headaches we faced in making the structural change was that other package authors – including the (as of today) 20 packages that have strong reverse dependencies on <strong>quanteda</strong> had written functions that bypassed the accessor and replacement functions, despite our explicit plea not to do this in the documentation. By working with these package authors, however, we were able to correct almost all of this.</p></li>
+<li><p>New metadata handling.</p>
+<p>Corpus-level metadata is now inserted in a user metadata list via <code>meta()</code> and <code>meta&lt;-()</code>. <code>metacorpus()</code> is kept as a synonym for <code>meta()</code>, for backwards compatibility. Additional system-level corpus information is also recorded, but automatically when an object is created.</p>
+<p>Document-level metadata is deprecated, and now all document-level information is simply a “docvar”. For backward compatibility, <code>metadoc()</code> is kept and will insert document variables (docvars) with the name prefixed by an underscore.</p></li>
+<li><p>Corpus objects now store default summary statistics for efficiency. When these are present, <code>summary.corpus()</code> retrieves them rather than computing them on the fly.</p></li>
+<li><p>New index operators have been defined for core objects. The main change here is to redefine the <code>$</code> operator for corpus, tokens, and dfm objects (all objects that retain docvars) to allow this operator to access single docvars by name. Some other index operators have been redefined as well, such as <code>[.corpus</code> returning a slice of a corpus, and <code>[[.corpus</code> returning the texts from a corpus.</p>
+<pre class="r"><code># view a docvar
+tail(data_corpus_inaugural$Party)
+## [1] Democratic Republican Republican Democratic Democratic Republican
+## Levels: Democratic Democratic-Republican Federalist none Republican Whig
+
+# or reassign one
+data_corpus_inaugural$Party &lt;- &quot;hidden&quot;
+head(docvars(data_corpus_inaugural), 4)
+##   Year  President FirstName  Party
+## 1 1789 Washington    George hidden
+## 2 1793 Washington    George hidden
+## 3 1797      Adams      John hidden
+## 4 1801  Jefferson    Thomas hidden
+
+# or delete one
+data_corpus_inaugural$Party &lt;- NULL
+tail(docvars(data_corpus_inaugural), 4)
+##    Year President FirstName
+## 55 2005      Bush George W.
+## 56 2009     Obama    Barack
+## 57 2013     Obama    Barack
+## 58 2017     Trump Donald J.</code></pre>
+<p>See the full details at <a href="https://github.com/quanteda/quanteda/wiki/indexing_core_objects" class="uri">https://github.com/quanteda/quanteda/wiki/indexing_core_objects</a>.</p></li>
+<li><p><code>*_subset()</code> functions.</p>
+<p>The <code>subset</code> argument now must be logical, and the <code>select</code> argument has been removed. (This is part of <code>base::subset()</code> but has never made sense, either in <strong>quanteda</strong> or <strong>base</strong>.)</p></li>
+<li><p>Return format from <code>textstat_simil()</code> and <code>textstat_dist()</code>.</p>
+<p>Now defaults to a sparse matrix from the <strong>Matrix</strong> package, but coercion methods are provided for <code>as.data.frame()</code>, to make these functions return a data.frame just like the other textstat functions. With the conversion to <code>data.frame</code>, all documents (or features) are returned as pairwise sets.</p>
+<p>Additional coercion methods are provided for <code>as.dist()</code>, <code>as.simil()</code>, and <code>as.matrix()</code>.</p>
+<p>Example:</p>
+<pre class="r"><code>dfmat &lt;- corpus_subset(data_corpus_inaugural, Year &gt; 1990) %&gt;%
+    dfm(remove_punct = TRUE)
+tstat &lt;- textstat_simil(dfmat, method = &quot;cosine&quot;)
+tstat
+## textstat_simil object; method = &quot;cosine&quot;
+##              1993-Clinton 1997-Clinton 2001-Bush 2005-Bush 2009-Obama
+## 1993-Clinton        1.000        0.915     0.894     0.888      0.934
+## 1997-Clinton        0.915        1.000     0.899     0.920      0.945
+## 2001-Bush           0.894        0.899     1.000     0.878      0.920
+## 2005-Bush           0.888        0.920     0.878     1.000      0.921
+## 2009-Obama          0.934        0.945     0.920     0.921      1.000
+## 2013-Obama          0.931        0.928     0.920     0.890      0.960
+## 2017-Trump          0.902        0.894     0.899     0.884      0.911
+##              2013-Obama 2017-Trump
+## 1993-Clinton      0.931      0.902
+## 1997-Clinton      0.928      0.894
+## 2001-Bush         0.920      0.899
+## 2005-Bush         0.890      0.884
+## 2009-Obama        0.960      0.911
+## 2013-Obama        1.000      0.902
+## 2017-Trump        0.902      1.000</code></pre>
+<p>This now easily becomes a data.frame for “tidy”ing:</p>
+<pre class="r"><code># see the top most similar speeches
+as.data.frame(tstat) %&gt;% 
+    dplyr::arrange(-cosine)
+##       document1    document2    cosine
+## 1    2009-Obama   2013-Obama 0.9604997
+## 2  1997-Clinton   2009-Obama 0.9454959
+## 3  1993-Clinton   2009-Obama 0.9335386
+## 4  1993-Clinton   2013-Obama 0.9310702
+## 5  1997-Clinton   2013-Obama 0.9275654
+## 6     2005-Bush   2009-Obama 0.9209563
+## 7     2001-Bush   2013-Obama 0.9202483
+## 8  1997-Clinton    2005-Bush 0.9201660
+## 9     2001-Bush   2009-Obama 0.9196979
+## 10 1993-Clinton 1997-Clinton 0.9149276
+## 11   2009-Obama   2017-Trump 0.9112379
+## 12   2013-Obama   2017-Trump 0.9024086
+## 13 1993-Clinton   2017-Trump 0.9020775
+## 14    2001-Bush   2017-Trump 0.8994070
+## 15 1997-Clinton    2001-Bush 0.8987704
+## 16 1997-Clinton   2017-Trump 0.8935932
+## 17 1993-Clinton    2001-Bush 0.8935107
+## 18    2005-Bush   2013-Obama 0.8897259
+## 19 1993-Clinton    2005-Bush 0.8884613
+## 20    2005-Bush   2017-Trump 0.8836008
+## 21    2001-Bush    2005-Bush 0.8781827</code></pre>
+<p>Or a list, similar to <code>tm::findAssocs()</code>:</p>
+<pre class="r"><code>textstat_simil(dfmat, margin = &quot;features&quot;, method = &quot;cosine&quot;) %&gt;%
+    as.list(n = 6) %&gt;%
+    head()
+## $my
+##   democracy        ever         see      fellow       world opportunity 
+##   0.9739642   0.9547033   0.9515026   0.9500692   0.9354143   0.9321432 
+## 
+## $fellow
+##      give      home        my      ever democracy      eyes 
+## 0.9675032 0.9589667 0.9500692 0.9477582 0.9453623 0.9431191 
+## 
+## $citizens
+##  interests       live   deserves        not conscience       life 
+##  0.9472096  0.9467715  0.9375093  0.9348714  0.9233518  0.9077395 
+## 
+## $today
+## challenges      young      world        way         so     people 
+##  0.9815037  0.9694358  0.9621451  0.9540410  0.9401619  0.9351331 
+## 
+## $we
+##       our       are        no        to       but       for 
+## 0.9928250 0.9918359 0.9886128 0.9841328 0.9754735 0.9720326 
+## 
+## $celebrate
+##   ceremony   millions      world   congress themselves       down 
+##  0.9428090  0.9365858  0.9365696  0.8944272  0.8728716  0.8728716</code></pre></li>
+<li><p>The settings functions (and related slots and object attributes) are gone. These are now replaced by a new <code>meta(x, type = &quot;object&quot;)</code> that records object-specific meta-data, including settings such as the <code>n</code> for tokens (to record the <code>ngrams</code>).</p>
+<p>Under the hood, this enabled us to design a vessel to contain three types of medata: user metadata, which can be controlled entirely by the user and can contain anything (since it’s a list), and is accessed by <code>meta()</code> and <code>meta()&lt;-</code>; system metadata which is set when an object is created; and object metadata, which is automatically set when an object is modified or created, and includes options that the user controls.</p>
+<p>Example:</p>
+<pre class="r"><code>corp &lt;- corpus(&quot;This is my one-document corpus.&quot;)
+meta(corp) &lt;- list(source = &quot;My blog post.&quot;,
+                   mymatrix = matrix(1:6, nrow = 2))
+meta(corp)
+## $source
+## [1] &quot;My blog post.&quot;
+## 
+## $mymatrix
+##      [,1] [,2] [,3]
+## [1,]    1    3    5
+## [2,]    2    4    6
+
+meta(corp, type = &quot;system&quot;)
+## $`package-version`
+## [1] &#39;2.0.0&#39;
+## 
+## $`r-version`
+## [1] &#39;3.6.2&#39;
+## 
+## $system
+##  sysname  machine     user 
+##  &quot;Linux&quot; &quot;x86_64&quot;  &quot;kohei&quot; 
+## 
+## $directory
+## [1] &quot;/home/kohei/repo/blog.quanteda.org/content/post&quot;
+## 
+## $created
+## [1] &quot;2020-02-27&quot;</code></pre></li>
+<li><p>All included data objects are upgraded to the new formats. This includes the corpus objects, the single dfm data object, and the LSD 2015 dictionary object.</p></li>
+<li><p>New print methods for core objects (corpus, tokens, dfm, dictionary) now exist, each with new global options to control the number of documents shown, as well as the length of a text snippet (corpus), the tokens (tokens), dfm cells (dfm), or keys and values (dictionary). Similar to the extended printing options for dfm objects, printing of corpus objects now allows for brief summaries of the texts to be printed, and for the number of documents and the length of the previews to be controlled by new global options.</p>
+<p>The printing of objects is smarter and provides more user control, but looks better by default. Examples:</p>
+<pre class="r"><code>data_corpus_inaugural
+## Corpus consisting of 58 documents and 3 docvars.
+## 1789-Washington :
+## &quot;Fellow-Citizens of the Senate and of the House of Representa...&quot;
+## 
+## 1793-Washington :
+## &quot;Fellow citizens, I am again called upon by the voice of my c...&quot;
+## 
+## 1797-Adams :
+## &quot;When it was first perceived, in early times, that no middle ...&quot;
+## 
+## 1801-Jefferson :
+## &quot;Friends and Fellow Citizens: Called upon to undertake the du...&quot;
+## 
+## 1805-Jefferson :
+## &quot;Proceeding, fellow citizens, to that qualification which the...&quot;
+## 
+## 1809-Madison :
+## &quot;Unwilling to depart from examples of the most revered author...&quot;
+## 
+## [ reached max_ndoc ... 52 more documents ]
+print(data_corpus_inaugural, max_ndoc = 1, max_nchar = 20)
+## Corpus consisting of 58 documents and 3 docvars.
+## 1789-Washington :
+## &quot;Fellow-Citizens of t...&quot;
+## 
+## [ reached max_ndoc ... 57 more documents ]
+
+print(tokens(data_corpus_inaugural), max_ndoc = 3, max_ntok = 6)
+## Tokens consisting of 58 documents and 3 docvars.
+## 1789-Washington :
+## [1] &quot;Fellow-Citizens&quot; &quot;of&quot;              &quot;the&quot;             &quot;Senate&quot;         
+## [5] &quot;and&quot;             &quot;of&quot;             
+## [ ... and 1,531 more ]
+## 
+## 1793-Washington :
+## [1] &quot;Fellow&quot;   &quot;citizens&quot; &quot;,&quot;        &quot;I&quot;        &quot;am&quot;       &quot;again&quot;   
+## [ ... and 141 more ]
+## 
+## 1797-Adams :
+## [1] &quot;When&quot;      &quot;it&quot;        &quot;was&quot;       &quot;first&quot;     &quot;perceived&quot; &quot;,&quot;        
+## [ ... and 2,571 more ]
+## 
+## [ reached max_ndoc ... 55 more documents ]
+
+dfm(data_corpus_inaugural)
+## Document-feature matrix of: 58 documents, 9,399 features (91.8% sparse) and 3 docvars.
+##                  features
+## docs              fellow-citizens  of the senate and house representatives :
+##   1789-Washington               1  71 116      1  48     2               2 1
+##   1793-Washington               0  11  13      0   2     0               0 1
+##   1797-Adams                    3 140 163      1 130     0               2 0
+##   1801-Jefferson                2 104 130      0  81     0               0 1
+##   1805-Jefferson                0 101 143      0  93     0               0 0
+##   1809-Madison                  1  69 104      0  43     0               0 0
+##                  features
+## docs              among vicissitudes
+##   1789-Washington     1            1
+##   1793-Washington     0            0
+##   1797-Adams          4            0
+##   1801-Jefferson      1            0
+##   1805-Jefferson      7            0
+##   1809-Madison        0            0
+## [ reached max_ndoc ... 52 more documents, reached max_nfeat ... 9,389 more features ]</code></pre>
+<p>The defaults for printing are all user-controllable via <code>quanteda_options()</code> as global settings, including whether to print summary information, or whether to print any section of a preview object at all. For instance:</p>
+<pre class="r"><code>quanteda_options(print_tokens_max_ndoc = 0)
+tokens(data_corpus_inaugural)
+## Tokens consisting of 58 documents and 3 docvars.</code></pre></li>
+<li><p>All textmodels and related functions have been moved to a new package <strong>quanteda.textmodels</strong>. This makes them easier to maintain and update, and keeps the size of the core package down.</p></li>
+</ol>
+<pre><code>This new package also includes the data objects that are primarily used as examples for scaling (which will be removed from **quanteda** in the next minor update), and also includes some new data objects as well.  See more about this package at https://github.com/quanteda/quanteda.textmodels.</code></pre>
+<ol start="11" style="list-style-type: decimal">
+<li><p><strong>quanteda</strong> v2 implements major changes to the <code>tokens()</code> constructor. These are designed to simplify the code and its maintenance in <strong>quanteda</strong>, to allow users to work with other (external) tokenizers, and to improve consistency across the tokens processing options. Changes include:</p>
+<ul>
+<li>A new method <code>tokens.list(x, ...)</code> constructs a <code>tokens</code> object from named list of characters, allowing users to tokenize texts using some other function (or package) such as <code>tokenize_words()</code>, <code>tokenize_sentences()</code>, or <code>tokenize_tweets()</code> from the <strong>tokenizers</strong> package, or the list returned by <code>spacyr::spacy_tokenize()</code>. This allows users to use their choice of tokenizer, as long as it returns a named list of characters. With <code>tokens.list()</code>, all tokens processing (<code>remove_*</code>) options can be applied, or the list can be converted directly to a <code>tokens</code> object without processing using <code>as.tokens.list()</code>. For instance:</li>
+</ul>
+<pre class="r"><code>txt &lt;- c(doc1 = &quot;I live in the United Kingdom.&quot;, 
+         doc2 = &quot;Excellent document two.&quot;)
+tokenizers::tokenize_words(txt) %&gt;%
+    tokens()
+## Tokens consisting of 2 documents.</code></pre>
+<p>as well as:</p>
+<pre class="r"><code>spacyr::spacy_parse(txt) %&gt;%
+    spacyr::entity_consolidate() %&gt;%
+    as.tokens(include_pos = &quot;pos&quot;)
+## Found &#39;spacy_condaenv&#39;. spacyr will use this environment
+## successfully initialized (spaCy Version: 2.0.11, language model: en)
+## (python options: type = &quot;condaenv&quot;, value = &quot;spacy_condaenv&quot;)
+## Tokens consisting of 2 documents.</code></pre>
+<ul>
+<li>All tokens options are now <em>intervention</em> options, to split or remove things that by default are not split or removed. All <code>remove_*</code> options to <code>tokens()</code> now remove them from tokens objects by calling <code>tokens.tokens()</code>, after constructing the object. “Pre-processing” is now actually post-processing using <code>tokens_*()</code> methods internally, after a conservative tokenization on token boundaries. This both improves performance and improves consistency in handling special characters (e.g. Twitter characters) across different tokenizer engines.</li>
+</ul>
+<p>Note that <code>tokens.tokens()</code> will remove what is found, but cannot “undo” a removal – for instance it cannot replace missing punctuation characters if these have already been removed.</p>
+<ul>
+<li><p>The option <code>remove_hyphens</code> is removed and deprecated, but replaced by <code>split_hyphens</code>. This preserves infix (internal) hyphens rather than splitting them. This behaviour is implemented in both the <code>what = &quot;word&quot;</code> and <code>what = &quot;word2&quot;</code> tokenizer options. This option is <code>FALSE</code> by default.</p></li>
+<li><p>The option <code>remove_twitter</code> has been removed. The new <code>what = &quot;word&quot;</code> is a smarter tokenizer that preserves social media tags, URLs, and email-addresses. “Tags” are defined as valid social media hashtags and usernames (using Twitter rules for validity) rather than removing the <code>#</code> and <code>@</code> punctuation characters, even if <code>remove_punct = TRUE</code>.</p></li>
+</ul>
+<p>While we have made it easier than ever to use any tokenizer you wish, the default <strong>quanteda</strong> tokenizer is smarter than ever. By default, it preserves social media usernames and hashtags, preserves URLs, and keeps infix hyphens. With the <code>remove_</code> options however, a user can change this at any time, even after having formed tokens using the (conservative) defaults.</p></li>
+</ol>
+</div>
+<div id="new-features" class="section level2">
+<h2>New features</h2>
+<ul>
+<li>We changed the default value of the <code>size</code> argument in <code>dfm_sample()</code> to the number of features, not the number of documents.</li>
+<li>We fixed a few CRAN-related issues (compiler warnings on Solaris and encoding warnings on r-devel-linux-x86_64-debian-clang.)</li>
+<li>Added <code>startpos</code> and <code>endpos</code> arguments to <code>tokens_select()</code>, for selecting on token positions relative to the start or end of the tokens in each document.</li>
+<li>We added a <code>convert()</code> method for corpus objects, to convert them into data.frame or json formats.</li>
+<li>We added a <code>spacy_tokenize()</code> method for corpus objects, to provide direct access via the <strong>spacyr</strong> package.</li>
+</ul>
+</div>
+<div id="behaviour-changes" class="section level2">
+<h2>Behaviour changes</h2>
+<ul>
+<li>We added a <code>force = TRUE</code> option and error checking for the situations of applying <code>dfm_weight()</code> or <code>dfm_group()</code> to a dfm that has already been weighted. The function <code>textstat_frequency()</code> now allows passing this argument to <code>dfm_group()</code> via <code>...</code>.</li>
+<li><code>textstat_frequency()</code> now has a new argument for resolving ties when ranking term frequencies, defaulting to the “min” method.</li>
+<li>New docvars accessor and replacement functions are available for corpus, tokens, and dfm objects via <code>$</code>. (See Index Operators for Core Objects above.)</li>
+<li><code>textstat_entropy()</code> now produces a data.frame that is more consistent with other <code>textstat_*</code> methods.</li>
+</ul>
+</div>
+<div id="bug-fixes-and-stability-enhancements" class="section level2">
+<h2>Bug fixes and stability enhancements</h2>
+<ul>
+<li>docnames are now enforced to be character (formerly, could be numeric for some objects).</li>
+<li>docnames are now enforced to be strictly unique for all object classes.</li>
+<li>Grouping operations in <code>tokens_group()</code> and <code>dfm_group()</code> are more robust to using multiple grouping variables, and preserve these correctly as docvars in the new dfm.</li>
+<li>We made some fixes to documented … objects in two functions that were previously causing CRAN check failures on the release of 1.5.2.</li>
+</ul>
+</div>
+<div id="other-improvements" class="section level2">
+<h2>Other improvements</h2>
+<ul>
+<li>The included corpus objects have been cleaned up and augmented with improved meta-data and docvars. The inaugural speech corpus, for instance, now includes the President’s political party affiliation.</li>
+</ul>
+</div>
