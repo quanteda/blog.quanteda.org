@@ -92,12 +92,6 @@ PygmentsStyle = "tango"
 	headerImage = ""
 	copyright = "Released under the MIT license<br>Powered by [Hugo](//gohugo.io/) with the [Bootstrap Plato Theme](//bootstrapmade.com/plato-responsive-bootstrap-website-template/)"
 
-    # options for highlight.js (version, additional languages, and theme)
-    highlightjsVersion = "9.18.1"
-    highlightjsCDN = "//cdnjs.cloudflare.com/ajax/libs"
-    highlightjsLang = ["r", "yaml"]
-    highlightjsTheme = "github"
-
     MathJaxCDN = "//cdn.bootcss.com"
     MathJaxVersion = "2.7.1"
     
