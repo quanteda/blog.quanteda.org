@@ -11,6 +11,8 @@ googleAnalytics = ""
 paginate = 10
 # Comment the themesDir option if you use this theme in production
 ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
+PygmentsCodeFences = true
+PygmentsStyle = "friendly"
 
 [permalinks]
     post = "/:year/:month/:day/:slug/"
@@ -90,16 +92,9 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
 	headerImage = ""
 	copyright = "Released under the MIT license<br>Powered by [Hugo](//gohugo.io/) with the [Bootstrap Plato Theme](//bootstrapmade.com/plato-responsive-bootstrap-website-template/)"
 
-    # options for highlight.js (version, additional languages, and theme)
-    highlightjsVersion = "9.11.0"
-    highlightjsCDN = "//cdn.bootcss.com"
-    highlightjsLang = ["r", "yaml"]
-    highlightjsTheme = "github"
-
     MathJaxCDN = "//cdn.bootcss.com"
     MathJaxVersion = "2.7.1"
-
-
+    
 	[params.social]
 		# Insert your account name and the icon will be shown in the right menu
 		rss = true

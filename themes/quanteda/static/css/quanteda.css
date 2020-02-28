@@ -1,0 +1,32 @@
+
+/* code */
+div.highlight {
+    padding: 0;
+    background: #f8f8f8;
+}
+code {
+    font-size: 0.9em;
+}
+
+
+/* fix */
+.navbar .nav > li > a {
+    font-size: 15px;
+}
+
+.tags  li {
+    line-height: 30px;
+}
+
+.tags  li a {
+    font-size: 13px;
+}
+
+header .meta {
+    text-transform: none;
+}
+
+.excerpt, .post-content {
+    line-height: 1.6em;    
+}
+

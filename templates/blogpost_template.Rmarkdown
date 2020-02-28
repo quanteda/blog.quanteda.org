@@ -3,8 +3,6 @@ title: "The title of the post"
 date: "2019-01-01"
 tags: ["blog"]
 author: "Your Name"
-blogdown::html_page:
-  highlight: tango
 ---
 
 
