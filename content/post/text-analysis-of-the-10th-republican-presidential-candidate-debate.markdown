@@ -80,8 +80,8 @@ Let's now put this into a single document, to create as a **quanteda** corpus ob
 
 ```r
 library("quanteda", warn.conflicts = FALSE, quietly = TRUE)
-## Package version: 2.0.0
-## Parallel computing: 2 of 6 threads used.
+## Package version: 2.0.9000
+## Parallel computing: 2 of 12 threads used.
 ## See https://quanteda.io for tutorials and examples.
 ```
 
@@ -91,11 +91,10 @@ Because we want this as a single document, we will combine all of the lines read
 ```r
 corp <- corpus(paste(txt, collapse = "\n"), 
                docnames = "presdebate-2016-02-25",
-               metacorpus = list(
+               meta = list(
                    source = "http://www.presidency.ucsb.edu/ws/index.php?pid=111634",
                    notes = "10th Republican candidate debate, Houston TX 2016-02-25")
                )
-## Warning: metacorpus argument is not used.
 ```
 
 We can now use the `summary()` method for a corpus object to see a bit of information about the corpus we have just created.
@@ -116,7 +115,7 @@ corpseg <- corpus_segment(corp, pattern = "\\s*[[:upper:]]+:\\s+",
 ```
 We needed to add `case_insensitive = FALSE` because otherwise, the upper case character class will be overwritten, and we will pick up matches for things like the "now:" in "I'm quoting you now: Let me be...".
 
-This converts our single document into a corpus of 538 documents, extracting the regular expression. match in the text to `pattern`
+This converts our single document into a corpus of 533 documents, extracting the regular expression. match in the text to `pattern`
 
 ```r
 summary(corpseg, 10)
@@ -175,22 +174,22 @@ Now we have only statements from the five Republican candidates in our corpus.
 ```r
 corpcand
 ## Corpus consisting of 350 documents and 1 docvar.
-## presdebate-2016-02-25.8 :
+## presdebate-2016-02-25.1 :
 ## "If someone had tried to describe today's America to you 30 y..."
 ## 
-## presdebate-2016-02-25.10 :
+## presdebate-2016-02-25.2 :
 ## "Well, you know, on the way over here, even getting ready ear..."
 ## 
-## presdebate-2016-02-25.12 :
+## presdebate-2016-02-25.3 :
 ## "Well, thank you. This election, we have to decide the identi..."
 ## 
-## presdebate-2016-02-25.14 :
+## presdebate-2016-02-25.4 :
 ## "Welcome to Texas. Here, Texas provided my family with hope. ..."
 ## 
-## presdebate-2016-02-25.16 :
+## presdebate-2016-02-25.5 :
 ## "Thank you. My whole theme is make America great again. We do..."
 ## 
-## presdebate-2016-02-25.18 :
+## presdebate-2016-02-25.6 :
 ## "First of all, he was in charge of amnesty, he was the leader..."
 ## 
 ## [ reached max_ndoc ... 344 more documents ]
@@ -298,9 +297,11 @@ Let's create a document-feature matrix from the candidate corpus, grouping the d
 ```r
 dfmatcand <- dfm(corpcand, groups = "speaker", verbose = TRUE)
 ## Creating a dfm from a corpus input...
-##    ... lowercasing
-##    ... found 350 documents, 2,510 features
-##    ... grouping texts
+##  ...lowercasing
+##  ...found 350 documents, 2,510 features
+##  ...grouping texts
+##  ...complete, elapsed time: 0.111 seconds.
+## Finished constructing a 5 x 2,510 sparse dfm.
 ```
 
 Because the texts are of different lengths, we want to normalize them (by converting the feature counts into vectors of relative frequencies within document):
@@ -321,13 +322,13 @@ Inspecting this, we see that all tokens have been matched to entries in the Regr
 head(dfmatcandRID, nf = 4)
 ```
 
-|document | PRIMARY.NEED.ORALITY| PRIMARY.NEED.ANALITY| PRIMARY.NEED.SEX| PRIMARY.SENSATION.TOUCH|
-|:--------|--------------------:|--------------------:|----------------:|-----------------------:|
-|CARSON   |            0.0024295|            0.0000000|                0|               0.0004859|
-|CRUZ     |            0.0012471|            0.0000000|                0|               0.0004157|
-|KASICH   |            0.0004850|            0.0009699|                0|               0.0000000|
-|RUBIO    |            0.0019897|            0.0000000|                0|               0.0000000|
-|TRUMP    |            0.0007628|            0.0006356|                0|               0.0003814|
+|doc_id | PRIMARY.NEED.ORALITY| PRIMARY.NEED.ANALITY| PRIMARY.NEED.SEX| PRIMARY.SENSATION.TOUCH|
+|:------|--------------------:|--------------------:|----------------:|-----------------------:|
+|CARSON |            0.0024295|            0.0000000|                0|               0.0004859|
+|CRUZ   |            0.0012471|            0.0000000|                0|               0.0004157|
+|KASICH |            0.0004850|            0.0009699|                0|               0.0000000|
+|RUBIO  |            0.0019897|            0.0000000|                0|               0.0000000|
+|TRUMP  |            0.0007628|            0.0006356|                0|               0.0003814|
 
 We can inspect the most common ones using the `topfeatures()` command, which here we will multiply by 100 to get slightly easier to interpret percentages.
 

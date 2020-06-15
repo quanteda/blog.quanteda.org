@@ -64,7 +64,7 @@ Because we want this as a single document, we will combine all of the lines read
 ```{r}
 corp <- corpus(paste(txt, collapse = "\n"), 
                docnames = "presdebate-2016-02-25",
-               metacorpus = list(
+               meta = list(
                    source = "http://www.presidency.ucsb.edu/ws/index.php?pid=111634",
                    notes = "10th Republican candidate debate, Houston TX 2016-02-25")
                )
@@ -82,7 +82,7 @@ corpseg <- corpus_segment(corp, pattern = "\\s*[[:upper:]]+:\\s+",
 ```
 We needed to add `case_insensitive = FALSE` because otherwise, the upper case character class will be overwritten, and we will pick up matches for things like the "now:" in "I'm quoting you now: Let me be...".
 
-This converts our single document into a corpus of 538 documents, extracting the regular expression. match in the text to `pattern`
+This converts our single document into a corpus of 533 documents, extracting the regular expression. match in the text to `pattern`
 ```{r}
 summary(corpseg, 10)
 ```

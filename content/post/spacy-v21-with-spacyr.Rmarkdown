@@ -41,7 +41,7 @@ Once we did this on macOS, everything worked fine:
 
 ```{r}
 library(spacyr)
-spacy_initialize(model = "en")
+spacy_initialize(model = "en_core_web_sm")
 spacy_parse("hello world")
 ```
 
@@ -68,13 +68,12 @@ The difference is massive: **spaCy** v2.1 is about **10 (!) times faster** in to
 So this is great.  However, there is a caveat in this performance gain. **`spacy_tokenize()` is fast under limited conditions.** By default, **spaCy** has [four pipeline components](https://spacy.io/usage/processing-pipelines): `tokenizer`, `tagger`, `parser` and `ner`. In version v2.1, the tokenizer became really, really fast. So, if you run only `tokenizer`, which is the first component of the pipeline (i.e. run `spacy_tokenize()` with all default options), it is very fast. However, if you need to conduct more feature rich tokenization (e.g. `spacy_tokenize(remove_numbers = TRUE)`), the later components of the pipeline have to be run and it will take longer to finish.
 
 ```{r}
-data_text_irishbudget2010 <- quanteda::texts(quanteda::data_corpus_irishbudget2010)
+data(data_corpus_irishbudget2010, package = "quanteda.textmodels")
 microbenchmark::microbenchmark(
-    "remove_numbers = TRUE" = spacy_tokenize(data_text_irishbudget2010, remove_numbers = TRUE),
-    "remove_numbers = FALSE" = spacy_tokenize(data_text_irishbudget2010),
+    "remove_numbers = TRUE" = spacy_tokenize(data_corpus_irishbudget2010, remove_numbers = TRUE),
+    "remove_numbers = FALSE" = spacy_tokenize(data_corpus_irishbudget2010),
     times = 1
 )
-
 ```
 
 (I didn't check whether or not this slowdown is caused by our code in either R or Python.  We will test this more thoroughly in the future.)

@@ -24,8 +24,8 @@ Changes are most dramatic for the corpus object. The corpus object have been red
 
 ```r
 library(quanteda, warn.conflicts = FALSE)
-## Package version: 2.0.0
-## Parallel computing: 2 of 6 threads used.
+## Package version: 2.0.9000
+## Parallel computing: 2 of 12 threads used.
 ## See https://quanteda.io for tutorials and examples.
 is.character(data_corpus_inaugural)
 ## [1] TRUE
@@ -35,7 +35,7 @@ This means that all functions that operate on character vectors will also operat
 
 #### Document variables
 
-New index operators have been defined for core objects.  The main change here is to redefine the `$` operator for corpus, tokens, and dfm objects (all objects that retain docvars) to allow this operator to access single docvars by name.  Some other index operators have been redefined as well, such as `[.corpus` returning a slice of a corpus, and `[[.corpus` returning the texts from a corpus.
+Following careful consideration, we redesigned some of the index operators for core objects.  The main change here is to redefine the `$` operator for corpus, tokens, and dfm objects (all objects that retain docvars) to allow this operator to access single docvars by name.  Some other index operators have been redefined as well, such as `[.corpus` returning a slice of a corpus, and `[[.corpus` returning the texts from a corpus.
 
 
 ```r
@@ -80,7 +80,7 @@ Example:
 ```r
 corp <- corpus("This is my one-document corpus.")
 meta(corp) <- list(source = "My blog post.",
-   mymatrix = matrix(1:6, nrow = 2))
+                   mymatrix = matrix(1:6, nrow = 2))
 meta(corp)
 ## $source
 ## [1] "My blog post."
@@ -92,20 +92,20 @@ meta(corp)
 
 meta(corp, type = "system")
 ## $`package-version`
-## [1] '2.0.0'
+## [1] '2.0.9000'
 ## 
 ## $`r-version`
-## [1] '3.6.2'
+## [1] '4.0.1'
 ## 
 ## $system
-##  sysname  machine     user 
-##  "Linux" "x86_64"  "kohei" 
+##   sysname   machine      user 
+##  "Darwin"  "x86_64" "kbenoit" 
 ## 
 ## $directory
-## [1] "/home/kohei/repo/blog.quanteda.org/content/post"
+## [1] "/Users/kbenoit/Dropbox (Personal)/GitHub/quanteda/blog.quanteda.org/content/post"
 ## 
 ## $created
-## [1] "2020-02-27"
+## [1] "2020-06-15"
 ```
 
 
@@ -118,9 +118,9 @@ A new method `tokens.list(x, ...)` constructs a `tokens` object from named list 
 
 ```r
 txt <- c(doc1 = "I live in the United Kingdom.", 
- doc2 = "Excellent document two.")
+         doc2 = "Excellent document two.")
 tokenizers::tokenize_words(txt) %>%
-tokens()
+    tokens()
 ## Tokens consisting of 2 documents.
 ## doc1 :
 ## [1] "i"       "live"    "in"      "the"     "united"  "kingdom"
@@ -133,12 +133,14 @@ as well as:
 
 
 ```r
-spacyr::spacy_parse(txt) %>%
-spacyr::entity_consolidate() %>%
-as.tokens(include_pos = "pos")
-## Found 'spacy_condaenv'. spacyr will use this environment
-## successfully initialized (spaCy Version: 2.0.11, language model: en)
+spacyr::spacy_initialize(model = "en_core_web_sm")
+## spacy python option is already set, spacyr will use:
+## 	condaenv = "spacy_condaenv"
+## successfully initialized (spaCy Version: 2.2.4, language model: en_core_web_sm)
 ## (python options: type = "condaenv", value = "spacy_condaenv")
+spacyr::spacy_parse(txt) %>%
+    spacyr::entity_consolidate() %>%
+    as.tokens(include_pos = "pos")
 ## Tokens consisting of 2 documents.
 ## doc1 :
 ## [1] "I/PRON"                    "live/VERB"                
@@ -214,25 +216,17 @@ print(tokens(data_corpus_inaugural), max_ndoc = 3, max_ntok = 6)
 ## 
 ## [ reached max_ndoc ... 55 more documents ]
 
-dfm(data_corpus_inaugural)
-## Document-feature matrix of: 58 documents, 9,399 features (91.8% sparse) and 3 docvars.
+print(dfm(data_corpus_inaugural), max_ndoc = 6, max_nfeat = 6)
+## Document-feature matrix of: 58 documents, 9,360 features (91.8% sparse) and 3 docvars.
 ##                  features
-## docs              fellow-citizens  of the senate and house representatives :
-##   1789-Washington               1  71 116      1  48     2               2 1
-##   1793-Washington               0  11  13      0   2     0               0 1
-##   1797-Adams                    3 140 163      1 130     0               2 0
-##   1801-Jefferson                2 104 130      0  81     0               0 1
-##   1805-Jefferson                0 101 143      0  93     0               0 0
-##   1809-Madison                  1  69 104      0  43     0               0 0
-##                  features
-## docs              among vicissitudes
-##   1789-Washington     1            1
-##   1793-Washington     0            0
-##   1797-Adams          4            0
-##   1801-Jefferson      1            0
-##   1805-Jefferson      7            0
-##   1809-Madison        0            0
-## [ reached max_ndoc ... 52 more documents, reached max_nfeat ... 9,389 more features ]
+## docs              fellow-citizens  of the senate and house
+##   1789-Washington               1  71 116      1  48     2
+##   1793-Washington               0  11  13      0   2     0
+##   1797-Adams                    3 140 163      1 130     0
+##   1801-Jefferson                2 104 130      0  81     0
+##   1805-Jefferson                0 101 143      0  93     0
+##   1809-Madison                  1  69 104      0  43     0
+## [ reached max_ndoc ... 52 more documents, reached max_nfeat ... 9,354 more features ]
 ```
 
 The defaults for printing are all user-controllable via `quanteda_options()` as global settings, including whether to print summary information, or whether to print any section of a preview object at all.  For instance:
@@ -260,17 +254,17 @@ tstat <- textstat_simil(dfmat, method = "cosine")
 tstat
 ## textstat_simil object; method = "cosine"
 ##              1993-Clinton 1997-Clinton 2001-Bush 2005-Bush 2009-Obama
-## 1993-Clinton        1.000        0.915     0.894     0.888      0.934
-## 1997-Clinton        0.915        1.000     0.899     0.920      0.945
-## 2001-Bush           0.894        0.899     1.000     0.878      0.920
-## 2005-Bush           0.888        0.920     0.878     1.000      0.921
-## 2009-Obama          0.934        0.945     0.920     0.921      1.000
-## 2013-Obama          0.931        0.928     0.920     0.890      0.960
-## 2017-Trump          0.902        0.894     0.899     0.884      0.911
+## 1993-Clinton        1.000        0.915     0.891     0.888      0.934
+## 1997-Clinton        0.915        1.000     0.898     0.920      0.945
+## 2001-Bush           0.891        0.898     1.000     0.876      0.919
+## 2005-Bush           0.888        0.920     0.876     1.000      0.921
+## 2009-Obama          0.934        0.945     0.919     0.921      1.000
+## 2013-Obama          0.931        0.928     0.919     0.890      0.960
+## 2017-Trump          0.902        0.894     0.897     0.884      0.911
 ##              2013-Obama 2017-Trump
 ## 1993-Clinton      0.931      0.902
 ## 1997-Clinton      0.928      0.894
-## 2001-Bush         0.920      0.899
+## 2001-Bush         0.919      0.897
 ## 2005-Bush         0.890      0.884
 ## 2009-Obama        0.960      0.911
 ## 2013-Obama        1.000      0.902
@@ -283,29 +277,14 @@ This now easily becomes a data.frame for "tidy"ing:
 ```r
 # see the top most similar speeches
 as.data.frame(tstat) %>% 
-dplyr::arrange(-cosine)
-##       document1    document2    cosine
-## 1    2009-Obama   2013-Obama 0.9604997
-## 2  1997-Clinton   2009-Obama 0.9454959
-## 3  1993-Clinton   2009-Obama 0.9335386
-## 4  1993-Clinton   2013-Obama 0.9310702
-## 5  1997-Clinton   2013-Obama 0.9275654
-## 6     2005-Bush   2009-Obama 0.9209563
-## 7     2001-Bush   2013-Obama 0.9202483
-## 8  1997-Clinton    2005-Bush 0.9201660
-## 9     2001-Bush   2009-Obama 0.9196979
-## 10 1993-Clinton 1997-Clinton 0.9149276
-## 11   2009-Obama   2017-Trump 0.9112379
-## 12   2013-Obama   2017-Trump 0.9024086
-## 13 1993-Clinton   2017-Trump 0.9020775
-## 14    2001-Bush   2017-Trump 0.8994070
-## 15 1997-Clinton    2001-Bush 0.8987704
-## 16 1997-Clinton   2017-Trump 0.8935932
-## 17 1993-Clinton    2001-Bush 0.8935107
-## 18    2005-Bush   2013-Obama 0.8897259
-## 19 1993-Clinton    2005-Bush 0.8884613
-## 20    2005-Bush   2017-Trump 0.8836008
-## 21    2001-Bush    2005-Bush 0.8781827
+    dplyr::arrange(-cosine) %>%
+    head(n = 5)
+##      document1  document2    cosine
+## 1   2009-Obama 2013-Obama 0.9604997
+## 2 1997-Clinton 2009-Obama 0.9454959
+## 3 1993-Clinton 2009-Obama 0.9335386
+## 4 1993-Clinton 2013-Obama 0.9310702
+## 5 1997-Clinton 2013-Obama 0.9275654
 ```
 
 Or a list, similar to `tm::findAssocs()`:
@@ -313,8 +292,8 @@ Or a list, similar to `tm::findAssocs()`:
 
 ```r
 textstat_simil(dfmat, margin = "features", method = "cosine") %>%
-as.list(n = 6) %>%
-head()
+    as.list(n = 6) %>%
+    head(n = 3)
 ## $my
 ##   democracy        ever         see      fellow       world opportunity 
 ##   0.9739642   0.9547033   0.9515026   0.9500692   0.9354143   0.9321432 
@@ -325,19 +304,7 @@ head()
 ## 
 ## $citizens
 ##  interests       live   deserves        not conscience       life 
-##  0.9472096  0.9467715  0.9375093  0.9348714  0.9233518  0.9077395 
-## 
-## $today
-## challenges      young      world        way         so     people 
-##  0.9815037  0.9694358  0.9621451  0.9540410  0.9401619  0.9351331 
-## 
-## $we
-##       our       are        no        to       but       for 
-## 0.9928250 0.9918359 0.9886128 0.9841328 0.9754735 0.9720326 
-## 
-## $celebrate
-##   ceremony   millions      world   congress themselves       down 
-##  0.9428090  0.9365858  0.9365696  0.8944272  0.8728716  0.8728716
+##  0.9472096  0.9467715  0.9375093  0.9348714  0.9233518  0.9077395
 ```
 
 ### 5. quanteda.textmodel package
@@ -351,14 +318,23 @@ This new package also includes the data objects that are primarily used as examp
 
 ### New features
 
-* We changed the default value of the `size` argument in `dfm_sample()` to the number of features, not the number of documents.
-* We fixed a few CRAN-related issues (compiler warnings on Solaris and encoding warnings on r-devel-linux-x86_64-debian-clang.)
-* Added `startpos` and `endpos` arguments to `tokens_select()`, for selecting on token positions relative to the start or end of the tokens in each document.
+* We added `startpos` and `endpos` arguments to `tokens_select()`, for selecting on token positions relative to the start or end of the tokens in each document.
 * We added a `convert()` method for corpus objects, to convert them into data.frame or json formats.
 * We added a `spacy_tokenize()` method for corpus objects, to provide direct access via the **spacyr** package.
+* A new convenience feature `featfreq()` returns the feature overall frequency for a dfm.
+
+    
+    ```r
+    featfreq(dfmat) %>% 
+        sort(decreasing = TRUE) %>% 
+        head(n = 10)
+    ##  the  and   of  our   to   we    a   in that   is 
+    ##  727  627  515  410  368  354  248  208  198  188
+    ```
 
 ### Behaviour changes
 
+* We changed the default value of the `size` argument in `dfm_sample()` to the number of features, not the number of documents.
 *  The `subset` argument now must be logical, and the `select` argument has been removed.  (This is part of `base::subset()` but has never made sense, either in **quanteda** or **base**.)
 * We added a `force = TRUE` option and error checking for the situations of applying `dfm_weight()` or `dfm_group()` to a dfm that has already been weighted.  The function `textstat_frequency()` now allows passing this argument to `dfm_group()` via `...`.
 * `textstat_frequency()` now has a new argument for resolving ties when ranking term frequencies, defaulting to the "min" method.
@@ -367,7 +343,9 @@ This new package also includes the data objects that are primarily used as examp
 
 ### Bug fixes and stability enhancements
 
+* We fixed a few CRAN-related issues (compiler warnings on Solaris and encoding warnings on r-devel-linux-x86_64-debian-clang.)
+*  We made some fixes to documented `...` objects in two functions that were previously causing CRAN check failures on the release of version 1.5.2.
 *  docnames are now enforced to be character (formerly, could be numeric for some objects).
 *  docnames are now enforced to be strictly unique for all object classes.
 *  Grouping operations in `tokens_group()` and `dfm_group()` are more robust to using multiple grouping variables, and preserve these correctly as docvars in the new dfm.
-*  We made some fixes to documented ... objects in two functions that were previously causing CRAN check failures on the release of version 1.5.2.
+*  All included data objects are upgraded to the new formats.  This includes the corpus objects, the single dfm data object, and the LSD 2015 dictionary object.

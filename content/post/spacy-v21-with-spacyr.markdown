@@ -42,14 +42,15 @@ Once we did this on macOS, everything worked fine:
 
 ```r
 library(spacyr)
-spacy_initialize(model = "en")
-## Found 'spacy_condaenv'. spacyr will use this environment
-## successfully initialized (spaCy Version: 2.0.11, language model: en)
+spacy_initialize(model = "en_core_web_sm")
+## spacy python option is already set, spacyr will use:
+## 	condaenv = "spacy_condaenv"
+## successfully initialized (spaCy Version: 2.2.4, language model: en_core_web_sm)
 ## (python options: type = "condaenv", value = "spacy_condaenv")
 spacy_parse("hello world")
-##   doc_id sentence_id token_id token lemma  pos entity
-## 1  text1           1        1 hello hello INTJ       
-## 2  text1           1        2 world world NOUN
+##   doc_id sentence_id token_id token lemma   pos entity
+## 1  text1           1        1 hello hello  INTJ       
+## 2  text1           1        2 world world PROPN
 ```
 
 If you have your original environment (e.g. a custom language model you trained) and do not want to mess up the setup, you can test a new version by creating another environment as described below.
@@ -75,19 +76,19 @@ So this is great.  However, there is a caveat in this performance gain. **`spacy
 
 
 ```r
-data_text_irishbudget2010 <- quanteda::texts(quanteda::data_corpus_irishbudget2010)
+data(data_corpus_irishbudget2010, package = "quanteda.textmodels")
 microbenchmark::microbenchmark(
-    "remove_numbers = TRUE" = spacy_tokenize(data_text_irishbudget2010, remove_numbers = TRUE),
-    "remove_numbers = FALSE" = spacy_tokenize(data_text_irishbudget2010),
+    "remove_numbers = TRUE" = spacy_tokenize(data_corpus_irishbudget2010, remove_numbers = TRUE),
+    "remove_numbers = FALSE" = spacy_tokenize(data_corpus_irishbudget2010),
     times = 1
 )
 ## Unit: milliseconds
-##                    expr       min        lq      mean    median        uq
-##   remove_numbers = TRUE 8330.6922 8330.6922 8330.6922 8330.6922 8330.6922
-##  remove_numbers = FALSE  960.9906  960.9906  960.9906  960.9906  960.9906
-##        max neval
-##  8330.6922     1
-##   960.9906     1
+##                    expr        min         lq       mean     median         uq
+##   remove_numbers = TRUE 11880.4233 11880.4233 11880.4233 11880.4233 11880.4233
+##  remove_numbers = FALSE   263.1618   263.1618   263.1618   263.1618   263.1618
+##         max neval
+##  11880.4233     1
+##    263.1618     1
 ```
 
 (I didn't check whether or not this slowdown is caused by our code in either R or Python.  We will test this more thoroughly in the future.)
