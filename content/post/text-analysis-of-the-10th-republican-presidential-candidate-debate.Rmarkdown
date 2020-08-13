@@ -3,6 +3,7 @@ title: "Text analysis of the 10th Republican Presidential candidate debate"
 author: "Kenneth Benoit and Gokhan Ciflikli"
 date: "2019-02-12"
 tags: ["blog", "r-bloggers"]
+categories: ["R"]
 ---
 
 ```{r, echo = FALSE}
@@ -164,10 +165,10 @@ Here we demonstrate this using the Regressive Imagery Dictionary, from Martindal
 
 ```{r}
 # get the RID from the Provalis website
-download.file("http://provalisresearch.com/Download/RID.ZIP", "RID.zip")
-unzip("RID.zip")
+# download.file("http://provalisresearch.com/Download/RID.ZIP", "RID.zip")
+# unzip("RID.zip", exdir = ".")
 data_dictionary_RID <- dictionary(file = "RID.CAT", format = "wordstat")
-invisible(file.remove("RID.zip", "RID.CAT", "RID.exc"))
+# invisible(file.remove("RID.zip", "RID.CAT", "RID.exc"))
 ```
 
 This is a nested dictionary object with three primary keys:

@@ -3,6 +3,7 @@ title: "Using spaCy v2.1 with spacyr"
 author: "Akitaka Matsuo"
 date: '2019-03-28'
 tags: ["blog", "spacyr"]
+categories: ["R"]
 ---
 
 
@@ -43,10 +44,10 @@ Once we did this on macOS, everything worked fine:
 ```r
 library(spacyr)
 spacy_initialize(model = "en_core_web_sm")
-## spacy python option is already set, spacyr will use:
-## 	condaenv = "spacy_condaenv"
-## successfully initialized (spaCy Version: 2.2.4, language model: en_core_web_sm)
-## (python options: type = "condaenv", value = "spacy_condaenv")
+## Finding a python executable with spaCy installed...
+## spaCy (language model: en_core_web_sm) is installed in C:\Users\Mayazure\AppData\Local\Programs\Python\Python37\python.exe
+## successfully initialized (spaCy Version: 2.3.2, language model: en_core_web_sm)
+## (python options: type = "python_executable", value = "C:\Users\Mayazure\AppData\Local\Programs\Python\Python37\python.exe")
 spacy_parse("hello world")
 ##   doc_id sentence_id token_id token lemma   pos entity
 ## 1  text1           1        1 hello hello  INTJ       
@@ -83,12 +84,12 @@ microbenchmark::microbenchmark(
     times = 1
 )
 ## Unit: milliseconds
-##                    expr        min         lq       mean     median         uq
-##   remove_numbers = TRUE 11880.4233 11880.4233 11880.4233 11880.4233 11880.4233
-##  remove_numbers = FALSE   263.1618   263.1618   263.1618   263.1618   263.1618
-##         max neval
-##  11880.4233     1
-##    263.1618     1
+##                    expr       min        lq      mean    median        uq
+##   remove_numbers = TRUE 3873.1447 3873.1447 3873.1447 3873.1447 3873.1447
+##  remove_numbers = FALSE  106.2504  106.2504  106.2504  106.2504  106.2504
+##        max neval
+##  3873.1447     1
+##   106.2504     1
 ```
 
 (I didn't check whether or not this slowdown is caused by our code in either R or Python.  We will test this more thoroughly in the future.)

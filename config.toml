@@ -121,3 +121,5 @@ PygmentsStyle = "friendly"
 		gitlab = ""
 		trello = ""
 
+[markup.goldmark.renderer]
+unsafe= true

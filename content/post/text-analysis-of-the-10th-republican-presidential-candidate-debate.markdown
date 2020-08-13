@@ -3,6 +3,7 @@ title: "Text analysis of the 10th Republican Presidential candidate debate"
 author: "Kenneth Benoit and Gokhan Ciflikli"
 date: "2019-02-12"
 tags: ["blog", "r-bloggers"]
+categories: ["R"]
 ---
 
 
@@ -22,7 +23,7 @@ The first step involves loading the debate into R.  To read this text, we can us
 
 ```r
 library("rvest")
-## Loading required package: xml2
+## 载入需要的程辑包：xml2
 scraping <- read_html("http://www.presidency.ucsb.edu/ws/index.php?pid=111634")
 txt <- scraping %>%
     html_nodes("p") %>%
@@ -33,7 +34,7 @@ We can see what the text looks like by examining the first and last parts of the
 
 ```r
 head(txt)
-## [1] "About Search"                                                                                                                                                                                                                                                    
+## [1] "About<U+00A0>Search"                                                                                                                                                                                                                                             
 ## [2] ""                                                                                                                                                                                                                                                                
 ## [3] "PARTICIPANTS:\nBen Carson;\nSenator Ted Cruz (TX);\nGovernor John Kasich (OH);\nSenator Marco Rubio (FL);\nDonald Trump;"                                                                                                                                        
 ## [4] "MODERATOR:\nWolf Blitzer (CNN); withPANELISTS:\nMaria Celeste Arrarás (Telemundo);\nDana Bash (CNN); and\nHugh Hewitt (Salem Radio Network)"                                                                                                                     
@@ -48,7 +49,7 @@ tail(txt, 10)
 ##  [6] "Presidential Candidate Debates, Republican Candidates Debate in Houston, Texas Online by Gerhard Peters and John T. Woolley, The American Presidency Project https://www.presidency.ucsb.edu/node/312591"                                                                                                                                                                                                                
 ##  [7] "The American Presidency ProjectJohn Woolley and Gerhard PetersContact"                                                                                                                                                                                                                                                                                                                                                   
 ##  [8] "Twitter Facebook"                                                                                                                                                                                                                                                                                                                                                                                                        
-##  [9] "Copyright © The American Presidency ProjectTerms of Service | Privacy | Accessibility"                                                                                                                                                                                                                                                                                                                                   
+##  [9] "Copyright <U+00A9> The American Presidency ProjectTerms of Service | Privacy | Accessibility"                                                                                                                                                                                                                                                                                                                            
 ## [10] ""
 ```
 
@@ -80,8 +81,8 @@ Let's now put this into a single document, to create as a **quanteda** corpus ob
 
 ```r
 library("quanteda", warn.conflicts = FALSE, quietly = TRUE)
-## Package version: 2.0.9000
-## Parallel computing: 2 of 12 threads used.
+## Package version: 2.1.1
+## Parallel computing: 2 of 24 threads used.
 ## See https://quanteda.io for tutorials and examples.
 ```
 
@@ -104,7 +105,7 @@ summary(corp)
 ## Corpus consisting of 1 document, showing 1 document:
 ## 
 ##                   Text Types Tokens Sentences
-##  presdebate-2016-02-25  3051  29962      2002
+##  presdebate-2016-02-25  3051  29962      2010
 ```
 
 Our goal in order to analyze this by speaker, is to redefine the corpus as a set of documents defined as a single speech acts, with a document variable identifying the speaker. We accomplish this through the `corpus_segment()` method, using the fact that each speaker is identified by a regular pattern such as "TRUMP:" or "BLITZER:".  These always start on a new line, and the colon (":") is always followed by a space.  We can turn this into a [regular expression](https://www.regular-expressions.info/), and feed it as the `pattern` argument to the function `corpus_segment()`.
@@ -125,10 +126,10 @@ summary(corpseg, 10)
 ##   presdebate-2016-02-25.1    18     27         1 \n\nPARTICIPANTS:\n
 ##   presdebate-2016-02-25.2     7      7         1      \nMODERATOR:\n
 ##   presdebate-2016-02-25.3    16     21         1        PANELISTS:\n
-##   presdebate-2016-02-25.4   165    287        20         \nBLITZER: 
+##   presdebate-2016-02-25.4   165    287        21         \nBLITZER: 
 ##   presdebate-2016-02-25.5    21     24         1         \nBLITZER: 
 ##   presdebate-2016-02-25.6    24     28         3         \nBLITZER: 
-##   presdebate-2016-02-25.7   114    198        13       \n\nBLITZER: 
+##   presdebate-2016-02-25.7   114    198        14       \n\nBLITZER: 
 ##   presdebate-2016-02-25.8    68     92         5          \nCARSON: 
 ##   presdebate-2016-02-25.9     3      3         1         \nBLITZER: 
 ##  presdebate-2016-02-25.10    98    164        10          \nKASICH:
@@ -155,7 +156,7 @@ Now we can see that the tags are better:
 ```r
 table(docvars(corpseg, "speaker"))
 ## 
-##      ARRARÁS         BASH      BLITZER       CARSON         CRUZ       HEWITT 
+##      ARRARáS         BASH      BLITZER       CARSON         CRUZ       HEWITT 
 ##           25           28          103           14           67           24 
 ##       KASICH    MODERATOR    PANELISTS PARTICIPANTS        RUBIO        TRUMP 
 ##           25            1            1            1           92          152
@@ -173,7 +174,7 @@ Now we have only statements from the five Republican candidates in our corpus.
 
 ```r
 corpcand
-## Corpus consisting of 350 documents and 1 docvar.
+## Corpus consisting of 375 documents and 1 docvar.
 ## presdebate-2016-02-25.1 :
 ## "If someone had tried to describe today's America to you 30 y..."
 ## 
@@ -192,9 +193,9 @@ corpcand
 ## presdebate-2016-02-25.6 :
 ## "First of all, he was in charge of amnesty, he was the leader..."
 ## 
-## [ reached max_ndoc ... 344 more documents ]
+## [ reached max_ndoc ... 369 more documents ]
 unique(docvars(corpcand, "speaker"))
-## [1] "CARSON" "KASICH" "RUBIO"  "CRUZ"   "TRUMP"
+## [1] "CARSON"  "KASICH"  "RUBIO"   "CRUZ"    "TRUMP"   "ARRARáS"
 ```
 
 Removing the final speaker (Blitzer) also removed some footer text that was picked up as following this tag.
@@ -210,7 +211,7 @@ texts(corpseg)[ndoc(corpseg)] %>%
 ## Presidential Candidate Debates, Republican Candidates Debate in Houston, Texas Online by Gerhard Peters and John T. Woolley, The American Presidency Project https://www.presidency.ucsb.edu/node/312591
 ## The American Presidency ProjectJohn Woolley and Gerhard PetersContact
 ## Twitter Facebook
-## Copyright © The American Presidency ProjectTerms of Service | Privacy | Accessibility
+## Copyright <U+00A9> The American Presidency ProjectTerms of Service | Privacy | Accessibility
 ```
 Because we removed Blitzer above when we created `corpcand`, we don't need to worry about removing the Footer text identifying the source of the document as being the American Presidency Project.
 
@@ -260,10 +261,10 @@ Here we demonstrate this using the Regressive Imagery Dictionary, from Martindal
 
 ```r
 # get the RID from the Provalis website
-download.file("http://provalisresearch.com/Download/RID.ZIP", "RID.zip")
-unzip("RID.zip")
+# download.file("http://provalisresearch.com/Download/RID.ZIP", "RID.zip")
+# unzip("RID.zip", exdir = ".")
 data_dictionary_RID <- dictionary(file = "RID.CAT", format = "wordstat")
-invisible(file.remove("RID.zip", "RID.CAT", "RID.exc"))
+# invisible(file.remove("RID.zip", "RID.CAT", "RID.exc"))
 ```
 
 This is a nested dictionary object with three primary keys:
@@ -298,10 +299,10 @@ Let's create a document-feature matrix from the candidate corpus, grouping the d
 dfmatcand <- dfm(corpcand, groups = "speaker", verbose = TRUE)
 ## Creating a dfm from a corpus input...
 ##  ...lowercasing
-##  ...found 350 documents, 2,510 features
+##  ...found 375 documents, 2,579 features
 ##  ...grouping texts
-##  ...complete, elapsed time: 0.111 seconds.
-## Finished constructing a 5 x 2,510 sparse dfm.
+##  ...complete, elapsed time: 0.05 seconds.
+## Finished constructing a 6 x 2,579 sparse dfm.
 ```
 
 Because the texts are of different lengths, we want to normalize them (by converting the feature counts into vectors of relative frequencies within document):
@@ -322,13 +323,14 @@ Inspecting this, we see that all tokens have been matched to entries in the Regr
 head(dfmatcandRID, nf = 4)
 ```
 
-|doc_id | PRIMARY.NEED.ORALITY| PRIMARY.NEED.ANALITY| PRIMARY.NEED.SEX| PRIMARY.SENSATION.TOUCH|
-|:------|--------------------:|--------------------:|----------------:|-----------------------:|
-|CARSON |            0.0024295|            0.0000000|                0|               0.0004859|
-|CRUZ   |            0.0012471|            0.0000000|                0|               0.0004157|
-|KASICH |            0.0004850|            0.0009699|                0|               0.0000000|
-|RUBIO  |            0.0019897|            0.0000000|                0|               0.0000000|
-|TRUMP  |            0.0007628|            0.0006356|                0|               0.0003814|
+|doc_id  | PRIMARY.NEED.ORALITY| PRIMARY.NEED.ANALITY| PRIMARY.NEED.SEX| PRIMARY.SENSATION.TOUCH|
+|:-------|--------------------:|--------------------:|----------------:|-----------------------:|
+|ARRARáS |            0.0000000|            0.0000000|                0|               0.0000000|
+|CARSON  |            0.0024295|            0.0000000|                0|               0.0004859|
+|CRUZ    |            0.0012471|            0.0000000|                0|               0.0004157|
+|KASICH  |            0.0004850|            0.0009699|                0|               0.0000000|
+|RUBIO   |            0.0019897|            0.0000000|                0|               0.0000000|
+|TRUMP   |            0.0007628|            0.0006356|                0|               0.0003814|
 
 We can inspect the most common ones using the `topfeatures()` command, which here we will multiply by 100 to get slightly easier to interpret percentages.
 
@@ -340,31 +342,32 @@ topfeatures(dfmatcandRID * 100, n = 10) %>%
 
 
 
-|                               | Percent|
-|:------------------------------|-------:|
-|SECONDARY.ABSTRACT_TOUGHT      |   14.51|
-|SECONDARY.SOCIAL_BEHAVIOR      |   11.79|
-|SECONDARY.TEMPORAL_REPERE      |   11.21|
-|SECONDARY.INSTRU_BEHAVIOR      |   10.34|
-|PRIMARY.REGR_KNOL.CONCRETENESS |    9.59|
-|SECONDARY.MORAL_IMPERATIVE     |    3.72|
-|EMOTIONS.AGGRESSION            |    3.40|
-|PRIMARY.SENSATION.VISION       |    2.54|
-|EMOTIONS.AFFECTION             |    2.05|
-|SECONDARY.RESTRAINT            |    2.02|
+|                                | Percent|
+|:-------------------------------|-------:|
+|SECONDARY.ABSTRACT_TOUGHT       |   16.82|
+|SECONDARY.SOCIAL_BEHAVIOR       |   15.06|
+|SECONDARY.TEMPORAL_REPERE       |   12.65|
+|SECONDARY.INSTRU_BEHAVIOR       |   11.97|
+|PRIMARY.REGR_KNOL.CONCRETENESS  |   10.94|
+|EMOTIONS.AGGRESSION             |    4.07|
+|SECONDARY.MORAL_IMPERATIVE      |    3.92|
+|PRIMARY.SENSATION.VISION        |    2.64|
+|EMOTIONS.AFFECTION              |    2.63|
+|PRIMARY.REGR_KNOL.BRINK-PASSAGE |    2.29|
 
 We could probably spend a whole day analyzing this information, but here, let's simply compare candidates on their relative use of language in the "Emotions: Glory" category of the RID.  We do this by slicing out the feature with this label.  
 
 ```r
 dfmatcandRID[, "EMOTIONS.GLORY"]
-## Document-feature matrix of: 5 documents, 1 feature (0.0% sparse) and 1 docvar.
-##         features
-## docs     EMOTIONS.GLORY
-##   CARSON   0.0009718173
-##   CRUZ     0.0027021409
-##   KASICH   0.0016973812
-##   RUBIO    0.0019896538
-##   TRUMP    0.0045766590
+## Document-feature matrix of: 6 documents, 1 feature (0.0% sparse) and 1 docvar.
+##          features
+## docs      EMOTIONS.GLORY
+##   ARRARáS   0.0019212296
+##   CARSON    0.0009718173
+##   CRUZ      0.0027021409
+##   KASICH    0.0016973812
+##   RUBIO     0.0019896538
+##   TRUMP     0.0045766590
 ```
 
 To make this a vector, we force it using `as.vector()`, as there is no ```drop = TRUE``` option for dfm indexing.  We then reattach the document labels (the candidate names) to this vector as names.  We can plot it using a dotplot, showing that Trump was by far the highest user of this type of language.

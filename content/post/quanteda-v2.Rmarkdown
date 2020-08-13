@@ -3,6 +3,7 @@ title: "What's new in quanteda version 2.0"
 author: "Kenneth Benoit and Kohei Watanabe"
 date: '2020-02-27'
 tags: ["blog", "quanteda-latest", "r-bloggers"]
+categories: ["R"]
 ---
 
 ```{r, echo = FALSE}

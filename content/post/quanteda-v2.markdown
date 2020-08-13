@@ -3,6 +3,7 @@ title: "What's new in quanteda version 2.0"
 author: "Kenneth Benoit and Kohei Watanabe"
 date: '2020-02-27'
 tags: ["blog", "quanteda-latest", "r-bloggers"]
+categories: ["R"]
 ---
 
 
@@ -24,8 +25,8 @@ Changes are most dramatic for the corpus object. The corpus object have been red
 
 ```r
 library(quanteda, warn.conflicts = FALSE)
-## Package version: 2.0.9000
-## Parallel computing: 2 of 12 threads used.
+## Package version: 2.1.1
+## Parallel computing: 2 of 24 threads used.
 ## See https://quanteda.io for tutorials and examples.
 is.character(data_corpus_inaugural)
 ## [1] TRUE
@@ -92,20 +93,20 @@ meta(corp)
 
 meta(corp, type = "system")
 ## $`package-version`
-## [1] '2.0.9000'
+## [1] '2.1.1'
 ## 
 ## $`r-version`
-## [1] '4.0.1'
+## [1] '4.0.2'
 ## 
 ## $system
-##   sysname   machine      user 
-##  "Darwin"  "x86_64" "kbenoit" 
+##    sysname    machine       user 
+##  "Windows"   "x86-64" "Mayazure" 
 ## 
 ## $directory
-## [1] "/Users/kbenoit/Dropbox (Personal)/GitHub/quanteda/blog.quanteda.org/content/post"
+## [1] "D:/Workspace/QG/blog.quanteda.org/content/post"
 ## 
 ## $created
-## [1] "2020-06-15"
+## [1] "2020-08-13"
 ```
 
 
@@ -134,10 +135,10 @@ as well as:
 
 ```r
 spacyr::spacy_initialize(model = "en_core_web_sm")
-## spacy python option is already set, spacyr will use:
-## 	condaenv = "spacy_condaenv"
-## successfully initialized (spaCy Version: 2.2.4, language model: en_core_web_sm)
-## (python options: type = "condaenv", value = "spacy_condaenv")
+## Finding a python executable with spaCy installed...
+## spaCy (language model: en_core_web_sm) is installed in C:\Users\Mayazure\AppData\Local\Programs\Python\Python37\python.exe
+## successfully initialized (spaCy Version: 2.3.2, language model: en_core_web_sm)
+## (python options: type = "python_executable", value = "C:\Users\Mayazure\AppData\Local\Programs\Python\Python37\python.exe")
 spacyr::spacy_parse(txt) %>%
     spacyr::entity_consolidate() %>%
     as.tokens(include_pos = "pos")
