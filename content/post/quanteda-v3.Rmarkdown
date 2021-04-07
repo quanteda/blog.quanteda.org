@@ -9,45 +9,43 @@ tags: ["blog", "quanteda-latest", "r-bloggers"]
 knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
 ```
 
-We are proud to announce the version 3.0 release of the **quanteda** package, just over a year following our last major release of v2.0. Version 3.0 is a significant update that makes **quanteda** and its growing family of modules more solid, more consistent, and more extensible.
+We are proud to announce the version 3.0 release of the **quanteda** package, just over a year following our last major release of v2.0. Version 3.0 is a significant update that makes **quanteda** and its growing family of extension packages more solid, more consistent, and more extensible.
 
 ## Main changes
 
 ### Modularisation
 
-We have now separated the `textplot_*()` functions from the main package into a separate package [**quanteda.textplots**](https://github.com/quanteda/quanteda.textplots), and the `textstat_*()` functions from the main package into a separate package[**quanteda.textstats**](https://github.com/quanteda/quanteda.textstats).  This completes the modularisation begun in v2 with the move of the `textmodel_*()` functions to the separate package **quanteda.textmodels**.  **quanteda** now consists of core functions for textual data processing and management.
+We have now separated the `textplot_*()` functions from the main package into a separate package [**quanteda.textplots**](https://github.com/quanteda/quanteda.textplots), and the `textstat_*()` functions from the main package into a separate package [**quanteda.textstats**](https://github.com/quanteda/quanteda.textstats).  This completes the modularisation begun in v2 with the move of the `textmodel_*()` functions to the separate package **quanteda.textmodels**](https://github.com/quanteda/quanteda.textmodels).  The **quanteda** package now consists only of core functions for textual data processing and management.
 
 ### Dependencies
 
-v3 has a much lighter dependency footprint.  The package dependency structure is now greatly reduced, by eliminating some unnecessary package dependencies, through modularisation, and by addressing complex downstream dependencies in packages such as **stopwords**.  v3 should serve as a more lightweight and more consistent platform for other text analysis package developers to build on.
+v3 has a much lighter dependency footprint.  Its package dependency structure is now greatly reduced, by eliminating some unnecessary package dependencies, by modularising the quanteda packages, and by addressing complex downstream dependencies in packages such as **stopwords**.  v3 should serve as a more lightweight and more consistent platform upon which other text analysis package developers can build.
 
 ### Non-standard evaluation
 
 v3 brings a new, consistent implementation of direct evaluation within docvars for `by` and `groups` arguments:  
 * The `*_sample()` functions' argument `by`, and `groups` in the `*_group()` functions, now take unquoted document variable (docvar) names directly, similar to the way the `subset` argument works in the `*_subset()` functions.  
-* Quoted docvar names no longer work, as these will be evaluated literally.  
-* The `by = "document"` formerly sampled from `docid(x)`, but this functionality is now removed.  Instead, use `by = docid(x)` to replicate this functionality.  
 * For `groups`, the default is now `docid(x)`, which is now documented more completely.  See `?groups` and `?docid`.
+* The `by = "document"` formerly sampled from `docid(x)`, but this functionality is now removed.  Instead, use `by = docid(x)` to replicate this functionality.  
+* Quoted docvar names no longer work, as these will be evaluated literally.  This may break some existing code, but it makes the usage of the `by` and `groups` arguments consistent with how other functions in R work.
 
 ### Deprecation of previous "shortcut" functions
 
-To enforce a more consistent workflow and one that users have to control more explicitly, we now require objects that operate on tokens to tokenize the inputs.  This mainly affects `dfm()` and `kwic()` -- see details below.
+To enforce a more consistent workflow and one that users have to control more explicitly, we now require objects that operate on tokens to work only with tokenised inputs.  Previously, some functions such as `dfm()` and `kwic()` worked directly with untokenised inputs, such as character or corpus objects, and tokenised these on the fly, with additional arguments to `tokens()` fed via `...`.  
 
-The main potentially breaking changes in version 3 relate to the deprecation or
-elimination of shortcut steps that allowed functions that required tokens inputs
-to skip the tokens creation step.  We did this to require users to take more
+In v3, we now restrict such functions to `tokens()` objects.  This may be less convenient in that users previously could run `dfm()` or `kwic()` on a corpus object directly.  The new usage, by contrast, requires users to take more
 direct control of tokenization options, or to substitute the alternative
-tokeniser of their choice (and then coercing it to tokens via [as.tokens()]).
+tokeniser of their choice (and then coercing it to tokens via `as.tokens()`).
 This also allows our function behaviour to be more consistent, with each
 function performing a single task, rather than combining functions (such as
 tokenisation _and_ constructing a matrix).
 
-The most common example involves constructing a dfm directly from a character
+The most commonly used shortcut involved constructing a dfm directly from a character
 or corpus object.  Formerly, this would construct a tokens object internally
 before creating the dfm, and allowed passing arguments to `tokens()` via `...`.
 This is now deprecated, although still functional with a warning.
 
-Why? Some processing steps are sequence-dependent, for instance when a user removes stopwords and also applies a stemmer.  
+What are the advantages of skipping the shortcut approach?  Requiring the text processing steps to be explicit means that users will be in greater control of the consequences of the sequencing of these steps.  Some processing steps are sequence-dependent, for instance when a user removes stopwords and also applies a stemmer.  
 ```{r echo = FALSE}
 suppressPackageStartupMessages(library("quanteda"))
 ```
@@ -67,7 +65,7 @@ tokens(txt, remove_punct = TRUE) %>%
     tokens_remove(stopwords("en"))
 ```
 While the first is probably what nearly all users want, by removing these from options previously hard-wired via options to `dfm()` now requires the user to choose the sequence.  Now, users must either creating a tokens object first, or pipe the
-tokens return to `dfm()` using `%>%`.
+tokens return to `dfm()` using `%>%`.  This has always been possible prior to v3, of course, but now it is required.
 
 We have also deprecated direct character or corpus inputs to `kwic()`, since this also requires a tokenised input.
 
@@ -100,18 +98,16 @@ The full list of new features is the following:
 
 In addition to the deprecation of convenience shortcuts noted above, the following usages are also deprecated in v3.
 
-* `dfm.character()` and `dfm.corpus()` are deprecated.  Users should create a tokens object first, and input that to `dfm()`.
+* `dfm()`: As of version 3, only tokens objects are supported as inputs to `dfm()` (as well as a dfm as input).  Calling `dfm()` for character or corpus objects is still functional, but issues a warning.  Convenience passing of arguments to `tokens()` via `...` for `dfm()` is also deprecated, but undocumented, and functions only with a warning.  Users should now create a tokens object (using `tokens()` from character or corpus inputs before calling `dfm()`.
 
-* `dfm()`: As of version 3, only tokens objects are supported as inputs to `dfm()`.  Calling `dfm()` for character or corpus objects is still functional, but issues a warning.  Convenience passing of arguments to `tokens()` via `...` for `dfm()` is also deprecated, but undocumented, and functions only with a warning.  Users should now create a tokens object (using `tokens()` from character or corpus inputs before calling `dfm()`.
-
-* `kwic()`: As of version 3, only tokens objects are supported as inputs to `kwic()`.  Calling `kwic()` for character or corpus objects is still functional, but issues a warning.  Passing arguments to `tokens()` via `...` in `kwic()` is now disabled.  Users should now create a tokens object (using `tokens()` from character or corpus inputs before calling `kwic()`.
+* `kwic()`: As of version 3, only tokens objects are supported as inputs to `kwic()`.  Calling `kwic()` for character or corpus objects is still functional, but issues a warning.  Passing arguments to `tokens()` via `...` in `kwic()` is now disabled.  Users should now create a tokens object (using `tokens()` from character or corpus inputs before calling `kwic()`).
 
 * (as noted above) Shortcut arguments to `dfm()` are now deprecated.  These are still active, with a warning, although they are no longer documented.  These are:
-    - `stem` -- use `tokens_wordstem()` or `dfm_wordstem()` instead.
-    - `select`, `remove` -- use `tokens_select()` / `dfm_select()` or `tokens_remove()` / `dfm_remove()` instead.
-    - `dictionary`, `thesaurus` -- use `tokens_lookup()` or `dfm_lookup()` instead.
-    - `valuetype`, `case_insensitive` -- these are disabled; for the deprecated arguments that take these qualifiers, they are fixed to the defaults `"glob"` and `TRUE`.
-    - `groups` -- use `tokens_group()` or `dfm_group()` instead.
+    - `stem`: use `tokens_wordstem()` or `dfm_wordstem()` instead.
+    - `select`, `remove`: use `tokens_select()` / `dfm_select()` or `tokens_remove()` / `dfm_remove()` instead.
+    - `dictionary`, `thesaurus`: use `tokens_lookup()` or `dfm_lookup()` instead.
+    - `valuetype`, `case_insensitive`: these are disabled; for the deprecated arguments that take these qualifiers, they are fixed to the defaults `"glob"` and `TRUE`.
+    - `groups`: use `tokens_group()` or `dfm_group()` instead.
     
 * `texts()` and `texts<-` are deprecated.
     - Use `as.character.corpus()` to turn a corpus into a simple named character vector.
@@ -151,3 +147,9 @@ Finally, we have removed some previously deprecated arguments and functions, and
 * `tokens()`:  The formerly deprecated options `remove_hyphens` and `remove_twitter` are now removed.  (Use `split_hyphens` instead, and the default tokenizer always now preserves Twitter and other social media tags.)
 
 * Special versions of `head()` and `tail()` for corpus, dfm, and fcm objects are now removed, since the base methods work fine for these objects. The main consequence was the removal of the `nf` option from the methods for dfm and fcm objects, which limited the number of features.  This can be accomplished using the index operator `[` instead, or for printing, by specifying `print(x, max_nfeat = 6L)` (for instance).
+
+## Acknowledgements
+
+We wish to thank the CRAN maintainers, especially Kurt Hornik, for their patience and assistance in preparing this tricky release, which involved some tricky tests and a refresh of all of the quanteda packages at the same time.
+
+We also thank the authors of the **quanteda**'s numerous reverse-dependent packages for working with us to update their code to work with the changes introduced in version 3.  We hope the new infrastructure and more consistent usage will provide an even more solid base on which your code can build.
